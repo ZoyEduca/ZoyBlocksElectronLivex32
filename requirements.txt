@@ -1,0 +1,7 @@
+numpy==1.23.3
+sentence-transformers==5.1.0
+scikit-learn
+
+# instalar manualmente
+# Instalar o torch com suporte somente para CPU - sem cuda, gpu ...
+# pip install torch==2.2.1+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html

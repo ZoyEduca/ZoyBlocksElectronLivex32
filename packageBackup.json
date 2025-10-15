@@ -1,0 +1,85 @@
+{
+  "name": "zoyblocks_live",
+  "version": "0.1.0",
+  "description": "Ambiente educacional de robótica da Zoy Educa",
+  "license": "ISC",
+  "author": "Majela Oliveira, Felipe Correia, Moises Bandeira",
+  "contributors": [
+    {
+      "name": "Felipe Correia",
+      "url": "https://github.com/Felipe-cdb"
+    },
+    {
+      "name": "Majela Oliveira",
+      "url": "https://github.com/majelaoliveira"
+    },
+    {
+      "name": "Moises Bandeira",
+      "url": "https://github.com/Moisesbandeira"
+    }
+  ],
+  "type": "commonjs",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "cross-env NODE_ENV=development electron .",
+    "dist": "cross-env NODE_ENV=production electron-builder",
+    "pack": "cross-env NODE_ENV=production electron-builder --dir",
+    "rebuild": "electron-rebuild -f -w",
+    "postinstall": "electron-rebuild",
+    "copy-blockly": "cpx \"node_modules/blockly/**/*\" src/assets/libs/blockly"
+  },
+  "build": {
+    "appId": "com.zoyedu.zoyblocks",
+    "productName": "ZoyBlocks_live",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "asar": true,
+    "asarUnpack": [],
+    "files": [
+      "src/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "venv/",
+        "to": "venv",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "python/",
+        "to": "python",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "src/assets/icons/zoy_icon.png"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "src/assets/icons/zoy_icon.png",
+      "category": "Education"
+    },
+    "mac": {
+      "category": "public.app-category.education",
+      "icon": "src/assets/icons/zoy_icon.png"
+    }
+  },
+  "devDependencies": {
+    "cpx": "^1.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^38.2.1",
+    "electron-builder": "^26.0.12",
+    "electron-rebuild": "^3.2.9"
+  },
+  "dependencies": {
+    "blockly": "^12.3.1",
+    "dotenv": "^17.2.3",
+    "serialport": "^12.0.0"
+  }
+}
