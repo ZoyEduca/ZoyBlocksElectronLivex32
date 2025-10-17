@@ -39,100 +39,100 @@ const assetsToLoad = {
     {
       name: "basicBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}basic_blocks/basic_blocks.js`,
+      path: `${window.paths.blocks_device.basic_blocks}basic_blocks.js`,
     },
     // importar categorias do basicblocks
     {
       name: "controle_basicBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}basic_blocks/cates/controle.js`,
+      path: `${window.paths.blocks_device.basic_blocks}cates/controle.js`,
     },
     {
       name: "funcao_basicBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}basic_blocks/cates/funcao.js`,
+      path: `${window.paths.blocks_device.basic_blocks}cates/funcao.js`,
     },
     {
       name: "logica_basicBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}basic_blocks/cates/logica.js`,
+      path: `${window.paths.blocks_device.basic_blocks}cates/logica.js`,
     },
     {
       name: "matematica_basicBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}basic_blocks/cates/matematica.js`,
+      path: `${window.paths.blocks_device.basic_blocks}cates/matematica.js`,
     },
     {
       name: "serial_basicBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}basic_blocks/cates/serial.js`,
+      path: `${window.paths.blocks_device.basic_blocks}cates/serial.js`,
     },
     {
       name: "texto_basicBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}basic_blocks/cates/texto.js`,
+      path: `${window.paths.blocks_device.basic_blocks}cates/texto.js`,
     },
     {
       name: "variaveis_basicBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}basic_blocks/cates/variaveis.js`,
+      path: `${window.paths.blocks_device.basic_blocks}cates/variaveis.js`,
     },
     // blocos do zoySteamBlocks
     {
       name: "zoySteamBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}zoy/zoy_steam_blocks/zoy_steam_blocks.js`,
+      path: `${window.paths.blocks_device.zoy_steam_blocks}zoy_steam_blocks.js`,
     },
     // importar categorias do zoySteamBlocks
     {
       name: "botao_zoySteamBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}zoy/zoy_steam_blocks/cates/botao.js`,
+      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/botao.js`,
     },
     {
       name: "comunicacaoInfra_zoySteamBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}zoy/zoy_steam_blocks/cates/comunicacaoInfra.js`,
+      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/comunicacaoInfra.js`,
     },
     {
       name: "luz_zoySteamBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}zoy/zoy_steam_blocks/cates/luz.js`,
+      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/luz.js`,
     },
     {
       name: "infravermelho_zoySteamBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}zoy/zoy_steam_blocks/cates/infravermelho.js`,
+      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/infravermelho.js`,
     },
     {
       name: "motores_zoySteamBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}zoy/zoy_steam_blocks/cates/motores.js`,
+      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/motores.js`,
     },
     {
       name: "motoresAvancados_zoySteamBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}zoy/zoy_steam_blocks/cates/motoresAvancados.js`,
+      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/motoresAvancados.js`,
     },
     {
       name: "pinosLivres_zoySteamBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}zoy/zoy_steam_blocks/cates/pinosLivres.js`,
+      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/pinosLivres.js`,
     },
     {
       name: "sensores_zoySteamBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}zoy/zoy_steam_blocks/cates/sensores.js`,
+      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/sensores.js`,
     },
     {
       name: "servo_zoySteamBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}zoy/zoy_steam_blocks/cates/servo.js`,
+      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/servo.js`,
     },
     {
       name: "som_zoySteamBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.blocks_live}zoy/zoy_steam_blocks/cates/som.js`,
+      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/som.js`,
     },
   ],
   images: [

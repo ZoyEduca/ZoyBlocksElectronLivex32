@@ -32,7 +32,8 @@ contextBridge.exposeInMainWorld("paths", {
     msg: resolveSrcPath("assets", "libs", "blockly", "msg"),
   },
   blocks_device: {
-    blocks_live: resolveSrcPath("assets", "blocks", "modo_live"),
+    basic_blocks: resolveSrcPath("assets", "blocks", "basic_blocks"),
+    zoy_steam_blocks: resolveSrcPath("assets", "blocks", "zoy", "zoy_steam_blocks"),
   },
   libs: {
     bootstrap: resolveSrcPath("assets", "libs", "bootstrap"),
