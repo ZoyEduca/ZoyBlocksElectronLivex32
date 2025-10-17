@@ -16,67 +16,72 @@ async function executarCodigo(codigoPython) {
             .split(',')
             .map(arg => arg.trim().replace(/^['"]|['"]$/g, ''));
 
+        // Argumentos de comando, onde args[0] é o comando e args[1] são os parâmetros
+        const comando = args[0];
+        const argumentos_comando = args.slice(1).join(',');  // Juntar todos os argumentos após o primeiro
         let comandoSerial = null;
 
+        //  === Funções enviadas dos blocos do Blockly para os dispositivos via serial ===
         try {
             switch (funcao) {
+                case 'led_pisca_n':
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
+                    break;
+                case 'led_left':
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
+                    break;
+                case 'led_right':
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
+                    break;
                 case 'pausa':
-                    comandoSerial = `<PAUSA:${args[0]}>`;
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
                 case 'som_nota':
-                    comandoSerial = `<SOM_NOTA:${args[0]},${args[1]}>`;
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
                 case 'motor_esquerdo_frente':
-                    comandoSerial = `<MOTOR_ESQUERDO_FRENTE:150>`;
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
                 case 'motor_direito_frente':
-                    comandoSerial = `<MOTOR_DIREITO_FRENTE:150>`;
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
                 case 'motor_esquerdo_tras':
-                    comandoSerial = `<MOTOR_ESQUERDO_TRAS:150>`;
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
                 case 'motor_direito_tras':
-                    comandoSerial = `<MOTOR_DIREITO_TRAS:150>`;
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
                 case 'set_pin_mode':
-                    comandoSerial = `<SET_PIN_MODE:${args[0]},${args[1]}>`;
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
                 case 'digital_write':
-                    comandoSerial = `<DIGITAL_WRITE:${args[0]},${args[1]}>`;
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
-                // case 'definir_pino_digital': {
-                //     const pino = args[0]; // D13
-                //     const estado = args[1]; // HIGH
-                //     comandoSerial = `<DIGITAL_WRITE:${pino},${estado}>`;
-                //     break;
-                // }
                 case 'definir_pino_digital': {
-                    comandoSerial = `<DIGITAL_WRITE:13,HIGH>`;
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
                 }
                 case 'analog_write':
-                    comandoSerial = `<ANALOG_WRITE:${args[0]},${args[1]}>`;
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
                 case 'ler_ultrassom':
-                    comandoSerial = `<ULTRASSOM:${args[0]},${args[1]}>`;
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
                 case 'servo':
-                    comandoSerial = `<SERVO_ANGULO:${args[0]},${args[1]}>`;
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
                 case 'servo360':
-                    comandoSerial = `<SERVO_360:${args[0]},${args[1]}>`;
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
-
-                // Se quiser permitir comandos genéricos:
                 case 'mover_frente':
-                case 'iniciar_zoy':
-                case 'mover_tras':
-                case 'led_pisca_n':
-                    if (args.length >= 2) {
-                        comandoSerial = `<${args[0]}:${args[1]}>`;
-                    }
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
-
+                case 'iniciar_zoy':
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
+                    break;
+                case 'mover_tras':
+                    comandoSerial = `<${comando}:${argumentos_comando}>`;
+                    break;
                 default:
                     logs.push(`[AVISO] Função desconhecida: ${funcao}`);
             }
