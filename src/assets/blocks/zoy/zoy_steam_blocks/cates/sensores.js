@@ -50,7 +50,7 @@
     Blockly.Python["zoy_ultrassom_distancia"] = function (block) {
       var trig = block.getFieldValue("TRIG");
       var echo = block.getFieldValue("ECHO");
-      var code = `ler_ultrassom('${trig}', '${echo}')`;
+      var code = `ler_ultrassom("ULTRASSOM","${trig}, ${echo}")\n`;
       return [code, Blockly.Python.ORDER_ATOMIC];
     };
 
