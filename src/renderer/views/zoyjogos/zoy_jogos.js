@@ -96,14 +96,11 @@ function defineMazeBlocksAndGenerators() {
         const repeats = block.getFieldValue('TIMES');
         const branch = Blockly.Python.statementToCode(block, 'DO');
         
-        // Gera um loop for em JS (mantendo a sintaxe Python-like para Blockly)
-        let code = '';
-        code += `for (let i = 0; i < ${repeats}; i++) {\n`;
-        code += Blockly.Python.addIndent(branch);
-        code += '}\n';
+        // CORRIGIDO: Agora gera a sintaxe correta do Python: for _ in range(N):
+        const code = `for _ in range(${repeats}):\n${branch}`;
         return code;
     };
-
+    
     // --- BLOCO: If com verificação de caminho ---
     Blockly.Blocks['controls_if_path'] = {
       init: function() {

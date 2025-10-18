@@ -1,594 +1,260 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zoy Jogos - Labirinto com Níveis</title>
-    <!-- Carregando Tailwind CSS para estética e responsividade -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Configuração do Tailwind para usar a fonte Inter e cores personalizadas
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        'zoy-blue': '#1e40af',
-                        'zoy-dark': '#0f172a',
-                        'zoy-light': '#f1f5f9',
-                        'panda-color': '#34d399', 
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Ajustando o caminho do CSS: Sobe 1 nível (views/) e entra em home/ -->
-    <link rel="stylesheet" href="../home/home.css"> 
-    <style>
-        /* Estilos específicos para a tela de jogos */
-        body, html { height: 100%; margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #f0f4f8; }
-        
-        /* Layout principal: 100% da viewport */
-        #mainContainer { display: flex; flex-direction: column; height: 100%; }
-        #gameAndBlockly { display: flex; flex-grow: 1; overflow: hidden; }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ZoyBlocks — Protótipo Game (Phaser 3)</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <style>
+    html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif}
+    #game-container{width:100%;height:100vh;display:block}
 
-        /* Área do Jogo */
-        #gameArea { 
-            flex-basis: 40%; 
-            max-width: 40%; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: flex-start; 
-            padding: 20px; 
-            overflow: auto; 
-        }
-        
-        /* Área do Blockly */
-        #blocklyArea { 
-            flex-basis: 60%; 
-            max-width: 60%; 
-            height: 100%;
-            border-left: 1px solid #e2e8f0;
-        }
-        #blocklyGameWorkspace { 
-            width: 100%; 
-            height: 100%; 
-        }
+    /* Modal/Oráculo */
+    #oracleOverlay{position:fixed;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:999;visibility:hidden}
+    #oracleCard{background:#fff;padding:20px;border-radius:8px;max-width:520px;width:92%;box-shadow:0 6px 18px rgba(0,0,0,0.25)}
+    #oracleCard h2{margin:0 0 8px 0}
+    #oracleOptions{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+    .optBtn{padding:10px;border-radius:6px;border:1px solid #ccc;background:#f7f7f7;cursor:pointer;text-align:left}
+    .optBtn:hover{background:#eee}
+    #oracleFooter{margin-top:12px;font-size:13px;color:#444}
 
-        /* Estilos para a área de status e código (Barra de Controle) */
-        #controls { 
-            padding: 10px 20px; 
-            background-color: #ffffff; 
-            border-bottom: 1px solid #e2e8f0; 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-        }
-        #generatedCodeDisplay { 
-            background: #f8fafc; 
-            padding: 8px 12px; 
-            border: 1px solid #cbd5e1; 
-            border-radius: 6px;
-            white-space: pre-wrap; 
-            word-break: break-word; 
-            max-height: 80px; 
-            overflow-y: auto; 
-            flex-grow: 1; 
-            font-size: 0.8rem;
-            color: #475569;
-            min-width: 250px; 
-        }
+    /* Top info */
+    #infoBar{position:fixed;left:12px;top:12px;z-index:900;background:rgba(255,255,255,0.9);padding:8px 12px;border-radius:6px;box-shadow:0 3px 8px rgba(0,0,0,0.12)}
+    #infoBar b{margin-right:6px}
 
-        /* Estilos do Labirinto (Canvas) */
-        #gameCanvas {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 4, 0, 0.05);
-            background-color: #fff;
-            margin-top: 10px;
-        }
-
-        /* Responsividade para telas menores */
-        @media (max-width: 1024px) {
-            #gameAndBlockly {
-                flex-direction: column; 
-            }
-            #gameArea, #blocklyArea {
-                flex-basis: 100%;
-                max-width: 100%;
-                height: 50vh; 
-            }
-            #blocklyArea {
-                border-left: none;
-                border-top: 1px solid #e2e8f0;
-            }
-        }
-    </style>
+    /* Small helper */
+    .hidden{display:none}
+  </style>
 </head>
 <body>
-    <div id="mainContainer">
-        
-        <!-- BARRA DE CONTROLE E CÓDIGO -->
-        <div id="controls">
-            <!-- BOTÃO DE VOLTAR PARA ROBÓTICA -->
-            <button 
-                class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out" 
-                id="btnVoltar" 
-                onclick="window.electronAPI.goBack()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-short inline-block mr-1" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
-                </svg>
-                Voltar para Robótica
-            </button>
-            
-            <button 
-                class="bg-zoy-blue hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out" 
-                id="btnExecutarPrograma" 
-                onclick="window.executeProgram()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill inline-block mr-1" viewBox="0 0 16 16">
-                    <path d="m11.596 8.697-5.594 3.996c-.57.408-1.396-.039-1.396-.717V4.118c0-.678.825-1.125 1.396-.717l5.594 3.996a.9.9 0 0 1 0 1.314z"/>
-                </svg>
-                Executar Programa
-            </button>
-            <button 
-                class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out" 
-                id="btnPararPrograma" 
-                onclick="window.stopProgram()" 
-                disabled>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stop-fill inline-block mr-1" viewBox="0 0 16 16">
-                    <path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5z"/>
-                </svg>
-                Parar
-            </button>
-            
-            <!-- Seletor de Dificuldade -->
-            <label for="difficultySelector" class="text-sm font-medium text-gray-700">Dificuldade:</label>
-            <select id="difficultySelector" onchange="window.setDifficulty(this.value)"
-                    class="py-2 px-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-zoy-blue focus:border-zoy-blue sm:text-sm">
-                <option value="easy">Fácil (5x5)</option>
-                <option value="medium">Médio (5x5)</option>
-                <option value="hard">Difícil (7x7)</option>
-            </select>
+  <div id="game-container"></div>
 
-            <!-- Exibição do Status -->
-            <div id="statusMessage" class="px-3 py-1 rounded-lg text-sm bg-gray-100 text-gray-700 font-medium transition duration-150 ease-in-out">
-                Pronto para começar.
-            </div>
+  <div id="infoBar">
+    <b>Modo:</b> Iniciação — <span id="scoreDisplay">Score: 0</span>
+  </div>
 
-            <!-- Exibição do Código Gerado (Debugging/Referência) -->
-            <pre id="generatedCodeDisplay">Nenhum bloco conectado</pre>
-        </div>
-
-        <!-- ÁREA DO JOGO E DO BLOCKLY -->
-        <div id="gameAndBlockly">
-            <!-- Área do Jogo/Labirinto -->
-            <div id="gameArea">
-                <h3 class="text-xl font-bold mb-4 text-zoy-dark">Labirinto do Robô Zoy</h3>
-                <canvas id="gameCanvas" width="500" height="500"></canvas>
-                <button 
-                    class="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out" 
-                    onclick="window.resetGame()">
-                    Reiniciar Labirinto
-                </button>
-            </div>
-
-            <!-- Área do Blockly -->
-            <div id="blocklyArea">
-                <div id="blocklyGameWorkspace"></div>
-            </div>
-        </div>
+  <!-- Oráculo (modal) -->
+  <div id="oracleOverlay" role="dialog" aria-hidden="true">
+    <div id="oracleCard">
+      <h2 id="oracleTitle">Oráculo da Robótica</h2>
+      <div id="oracleQuestion">Pergunta...</div>
+      <div id="oracleOptions"></div>
+      <div id="oracleFooter"></div>
     </div>
+  </div>
 
-    <!-- TOOLBOX: Deve ter este ID para ser referenciado no JS -->
-    <xml id="toolboxMaze" style="display: none">
-        <category name="Movimento" colour="#CC6666">
-            <block type="maze_moveForward"></block>
-            <block type="maze_turn"></block>
-        </category>
-        <category name="Controle" colour="#5CB85C">
-            <block type="controls_repeat_simple"></block>
-            <block type="controls_if_path"></block>
-        </category>
-    </xml>
+<script>
+/* ---------------------------
+   Protótipo Phaser 3 — Zoy Game
+   - Engine: Phaser 3 (CDN)
+   - Visual: formas geométricas
+   - Mode inicial: 2 portas (5 pontos cada)
+   - Arquivo independente (HTML) — pronto para rodar localmente ou embutir no Electron
+   ----------------------------*/
 
-    <!-- CRUCIAL: Carrega o script de lógica do Blockly e do jogo -->
-    <script src="zoy_jogos.js"></script>
+// Base de perguntas (pode ser migrada para arquivos JSON por disciplina)
+const QUESTIONS = [
+  {
+    id: 1,
+    question: 'O que faz um resistor em um circuito elétrico?',
+    options: ['Armazena carga elétrica', 'Limita a corrente elétrica'],
+    answer: 1,
+    explanation: 'Resistores limitam a corrente e dissipam energia em forma de calor.'
+  },
+  {
+    id: 2,
+    question: 'Qual componente é usado para controlar a velocidade de um motor DC em PWM?',
+    options: ['Transistor / MOSFET', 'Condensador eletrolítico'],
+    answer: 0,
+    explanation: 'Transistores/MOSFETs são usados como chaves para modular a potência do motor (PWM).'
+  },
+  {
+    id: 3,
+    question: 'Qual dispositivo serve para medir distância sem contato usando ultrassom?',
+    options: ['Sensor IR', 'Sensor ultrassônico HC-SR04'],
+    answer: 1,
+    explanation: 'O HC-SR04 mede distância por emissão e recepção de ondas ultrassônicas.'
+  }
+];
 
-    <script>
-        // Variáveis Globais de Estado do Jogo
-        let canvas, ctx;
-        window.isRunning = false; // Flag para controlar a execução (usada por zoy_jogos.js)
-        
-        // 0=Parede, 1=Caminho, 2=Início (Robô Zoy), 3=Fim (Objetivo)
-        
-        // --- 1. DEFINIÇÃO DOS NÍVEIS DE DIFICULDADE ---
-        const MAZES = {
-            easy: {
-                size: 5,
-                layout: [
-                    [2, 1, 0, 1, 0], 
-                    [0, 1, 1, 1, 0],
-                    [0, 0, 0, 1, 1],
-                    [1, 1, 1, 0, 1],
-                    [0, 0, 1, 3, 1]  
-                ]
-            },
-            medium: {
-                size: 5,
-                layout: [
-                    [2, 1, 0, 1, 1], 
-                    [1, 1, 0, 0, 1],
-                    [1, 0, 1, 1, 1],
-                    [1, 0, 1, 0, 0],
-                    [1, 1, 1, 0, 3]  
-                ]
-            },
-            hard: {
-                size: 7,
-                layout: [
-                    [2, 1, 1, 0, 1, 1, 1], 
-                    [0, 0, 1, 0, 1, 0, 1],
-                    [1, 1, 1, 1, 1, 0, 1],
-                    [1, 0, 0, 0, 1, 1, 1],
-                    [1, 1, 1, 1, 0, 1, 0],
-                    [0, 1, 0, 1, 0, 1, 1],
-                    [1, 1, 0, 1, 1, 1, 3]
-                ]
-            }
-        };
+// Parâmetros do jogo (modo inicial: 2 portas x 5 pontos)
+const MODE = {
+  name: 'Iniciação',
+  doors: 2,
+  pointsPerDoor: 5
+};
 
-        let currentDifficulty = 'easy';
-        let MAZE_SIZE = MAZES[currentDifficulty].size;
-        let MAZE = MAZES[currentDifficulty].layout;
-        
-        let currentPosition = { x: 0, y: 0 }; 
-        let currentDirection = 0; // 0: Right, 1: Down, 2: Left, 3: Up
+let gameSceneRef = null; // referencia à cena para modal poder controlar
+let currentQuestion = null;
+let currentDoorObj = null;
+let score = Number(localStorage.getItem('zoy_score') || 0);
 
-        // Referência global para o elemento de status
-        window.statusMessageElement = null; 
-        
-        // Cor do Robô (Zoy Blue)
-        const ROBOT_COLOR = '#1e40af'; 
-        const FACE_COLOR = '#ffffff';
+document.getElementById('scoreDisplay').innerText = 'Score: ' + score;
 
-        // --- FUNÇÕES AUXILIARES DE ESTADO ---
+document.getElementById('oracleOverlay').addEventListener('click', (e)=>{
+  // clicou fora do card fecha? não fecha — evita fechar ao clicar no overlay
+  if(e.target === document.getElementById('oracleOverlay')) e.stopPropagation();
+});
 
-        /** Função para mudar a dificuldade e recarregar o labirinto. */
-        window.setDifficulty = function(newDifficulty) {
-            currentDifficulty = newDifficulty;
-            const mazeConfig = MAZES[newDifficulty];
-            
-            if (!mazeConfig) {
-                console.error(`Dificuldade desconhecida: ${newDifficulty}`);
-                return;
-            }
-            
-            MAZE = mazeConfig.layout;
-            MAZE_SIZE = mazeConfig.size;
-            window.resetGame(); // Reinicia o jogo com o novo labirinto
-            window.updateStatus(`Nível alterado para ${newDifficulty.toUpperCase()}.`);
-        }
+function openOracleForDoor(scene, doorObj){
+  // pick random question
+  currentQuestion = QUESTIONS[Math.floor(Math.random()*QUESTIONS.length)];
+  currentDoorObj = doorObj;
+  gameSceneRef = scene;
 
+  showOracleModal(currentQuestion);
+  // pause physics/movimento
+  scene.physics.world.pause();
+}
 
-        /** Função global para atualizar o status. */
-        window.updateStatus = function(message, bgClass = 'bg-gray-100', textClass = 'text-gray-700') {
-            if (!window.statusMessageElement) {
-                console.error("ERRO DE DOM: Elemento statusMessage não encontrado.");
-                return;
-            }
-            window.statusMessageElement.className = `px-3 py-1 rounded-lg text-sm font-medium ${bgClass} ${textClass}`;
-            window.statusMessageElement.textContent = message;
-        }
+function showOracleModal(q){
+  const overlay = document.getElementById('oracleOverlay');
+  const qEl = document.getElementById('oracleQuestion');
+  const opts = document.getElementById('oracleOptions');
+  const footer = document.getElementById('oracleFooter');
 
-        /** Função de atraso (usada pelo código Blockly gerado) */
-        window.delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  qEl.innerText = q.question;
+  opts.innerHTML = '';
+  q.options.forEach((optText, idx)=>{
+    const btn = document.createElement('button');
+    btn.className = 'optBtn';
+    btn.innerText = optText;
+    btn.onclick = ()=>handleAnswer(idx);
+    opts.appendChild(btn);
+  });
 
-        /** Reinicia o estado do jogo para a posição inicial. */
-        window.resetGame = function() { 
-            window.isRunning = false;
-            // Encontra a posição inicial (tile 2)
-            for (let y = 0; y < MAZE_SIZE; y++) {
-                for (let x = 0; x < MAZE_SIZE; x++) {
-                    if (MAZE[y][x] === 2) {
-                        currentPosition = { x, y };
-                        currentDirection = 0; // Direção inicial: Direita
-                        break;
-                    }
-                }
-            }
-            window.updateStatus('Labirinto Reiniciado. Pronto para programar!');
-            drawMaze();
-            // Garante que os botões estão no estado correto
-            document.getElementById('btnExecutarPrograma').disabled = false;
-            document.getElementById('btnPararPrograma').disabled = true;
-        }
+  footer.innerText = 'Escolha uma opção para o Oráculo avaliar.';
+  overlay.style.visibility = 'visible';
+  overlay.setAttribute('aria-hidden','false');
+}
 
-        // --- FUNÇÕES DE INTERAÇÃO DO JOGO (Chamadas pelo código Blockly gerado) ---
-        
-        /** Move o Robô uma casa para frente. */
-        window.moveForward = async function() {
-            if (!window.isRunning) return false;
-            
-            // Adiciona um atraso para a animação
-            await window.delay(300); 
+function closeOracleModal(){
+  const overlay = document.getElementById('oracleOverlay');
+  overlay.style.visibility = 'hidden';
+  overlay.setAttribute('aria-hidden','true');
+}
 
-            let newX = currentPosition.x;
-            let newY = currentPosition.y;
+function handleAnswer(selectedIndex){
+  const footer = document.getElementById('oracleFooter');
+  if(selectedIndex === currentQuestion.answer){
+    footer.innerText = '✅ Correto! ' + currentQuestion.explanation;
+    // abrir porta (visual) e marcar pontos
+    if(currentDoorObj && !currentDoorObj.opened){
+      currentDoorObj.opened = true;
+      // tint verde
+      currentDoorObj.fillColor = 0x2ecc71; // not used directly on graphics, we'll set a flag
+      // store score
+      score += MODE.pointsPerDoor;
+      localStorage.setItem('zoy_score', score);
+      document.getElementById('scoreDisplay').innerText = 'Score: ' + score;
 
-            // 0: Right (+x), 1: Down (+y), 2: Left (-x), 3: Up (-y)
-            switch (currentDirection) {
-                case 0: newX++; break;
-                case 1: newY++; break;
-                case 2: newX--; break;
-                case 3: newY--; break;
-            }
+      // visual: criar uma animação de abertura ou remover colisão
+      if(gameSceneRef){
+        // remove body so player can cross
+        gameSceneRef.time.delayedCall(800, ()=>{
+          try{ gameSceneRef.physics.world.remove(currentDoorObj.body); }catch(e){}
+        });
+        // tint door to green via setFillStyle if it's a Phaser rectangle
+        if(currentDoorObj.setFillStyle) currentDoorObj.setFillStyle(0x2ecc71);
+      }
+    }
+  } else {
+    footer.innerText = '❌ Errado. Dica: ' + currentQuestion.explanation;
+    // não abre porta
+  }
 
-            // 1. Verifica limites
-            if (newX < 0 || newX >= MAZE_SIZE || newY < 0 || newY >= MAZE_SIZE) {
-                window.updateStatus('Colisão com a borda do mapa!', 'bg-red-200', 'text-red-900');
-                window.isRunning = false;
-                throw new Error('Collision or Game Over');
-            }
+  // after short delay, close modal and resume
+  setTimeout(()=>{
+    closeOracleModal();
+    if(gameSceneRef) gameSceneRef.physics.world.resume();
+  },1200);
+}
 
-            const nextTile = MAZE[newY][newX];
+/* ------------------ Phaser config and scene ------------------ */
+const config = {
+  type: Phaser.AUTO,
+  parent: 'game-container',
+  width: 960,
+  height: 640,
+  backgroundColor: '#87ceeb',
+  physics: {
+    default: 'arcade',
+    arcade: { debug: false }
+  },
+  scene: {
+    preload: preload,
+    create: create,
+    update: update
+  }
+};
 
-            // 2. Verifica parede
-            if (nextTile === 0) {
-                window.updateStatus('Colisão com uma parede!', 'bg-red-200', 'text-red-900');
-                window.isRunning = false;
-                throw new Error('Collision or Game Over');
-            }
-            
-            // 3. Move o Robô
-            currentPosition = { x: newX, y: newY };
-            drawMaze();
+const game = new Phaser.Game(config);
 
-            // 4. Verifica vitória (tile 3)
-            if (nextTile === 3) {
-                window.updateStatus('Parabéns! O Robô Zoy encontrou o Objetivo!', 'bg-green-200', 'text-green-800');
-                window.isRunning = false;
-                throw new Error('Game Over'); 
-            }
+function preload(){
+  // nenhuma imagem externa; usamos formas geométricas
+}
 
-            return true;
-        };
+function create(){
+  const scene = this;
+  // salvar referência global curta para debug
+  window._zoy_scene = scene;
 
-        /** Vira o Robô. */
-        window.turn = async function(direction) {
-            if (!window.isRunning) return false;
-            
-            // Adiciona um atraso para a animação
-            await window.delay(300);
+  // jogador: retângulo dinâmico com corpo arcade
+  player = this.add.rectangle(120, 320, 40, 40, 0x222222);
+  this.physics.add.existing(player);
+  player.body.setCollideWorldBounds(true);
+  player.body.setSize(40,40);
 
-            if (direction === 'LEFT') {
-                currentDirection = (currentDirection + 3) % 4; 
-            } else { // 'RIGHT'
-                currentDirection = (currentDirection + 1) % 4; 
-            }
-            drawMaze();
-            return true;
-        };
+  // portas: cria n portas estáticas do lado direito
+  this.doors = [];
+  const startY = 200;
+  const gap = 160;
+  for(let i=0;i<MODE.doors;i++){
+    const y = startY + i*gap;
+    const door = this.add.rectangle(760, y, 64, 120, 0x8B4513);
+    this.physics.add.existing(door, true); // static body
+    door.isDoor = true;
+    door.opened = false;
+    door.doorId = i+1;
+    this.doors.push(door);
+  }
 
-        /** Verifica se há caminho livre na direção especificada. */
-        window.isPath = function(checkDirection) {
-            let dir = currentDirection;
-            
-            if (checkDirection === 'LEFT') {
-                dir = (currentDirection + 3) % 4;
-            } else if (checkDirection === 'RIGHT') {
-                dir = (currentDirection + 1) % 4;
-            } else if (checkDirection === 'FORWARD') {
-                // Usa a direção atual
-            }
-            
-            let checkX = currentPosition.x;
-            let checkY = currentPosition.y;
+  // overlap between player and doors
+  this.doors.forEach(d=>{
+    this.physics.add.overlap(player, d, function(p,dObj){
+      if(!dObj.opened){
+        openOracleForDoor(scene, dObj);
+      }
+    }, null, this);
+  });
 
-            // 0: Right (+x), 1: Down (+y), 2: Left (-x), 3: Up (-y)
-            switch (dir) {
-                case 0: checkX++; break; 
-                case 1: checkY++; break; 
-                case 2: checkX--; break; 
-                case 3: checkY--; break; 
-            }
+  // borda do mundo
+  this.physics.world.setBounds(0,0,960,640);
 
-            // Verifica limites e paredes
-            if (checkX < 0 || checkX >= MAZE_SIZE || checkY < 0 || checkY >= MAZE_SIZE) {
-                return false; 
-            }
-            
-            return MAZE[checkY][checkX] !== 0; 
-        };
-        
-        // --- LÓGICA DE DESENHO (Canvas) ---
+  // controles
+  this.cursors = this.input.keyboard.createCursorKeys();
 
-        /**
-         * Desenha o Robô Zoy estilizado no canvas.
-         */
-        function drawZoyRobot(x, y, tileSize, direction) {
-            const centerX = x * tileSize + tileSize / 2;
-            const centerY = y * tileSize + tileSize / 2;
-            const robotSize = tileSize * 0.7;
-            const bodySize = robotSize * 0.7;
-            const headRadius = robotSize * 0.25;
+  // score text (Phaser) - deixamos o infoBar em HTML para persistência mais fácil
+  this.add.text(12,610,'Use as setas do teclado para mover o Zoy. Vá até uma porta para o Oráculo.',{fontSize:'14px', color:'#000'});
+}
 
-            ctx.save();
-            ctx.translate(centerX, centerY);
-            // Rotaciona: 0=Right (0 rad), 1=Down (PI/2), 2=Left (PI), 3=Up (3PI/2)
-            ctx.rotate(direction * Math.PI / 2); 
+let player;
+function update(time,delta){
+  const speed = 220;
+  if(!this.cursors) return;
+  player.body.setVelocity(0);
+  if(this.cursors.left.isDown) player.body.setVelocityX(-speed);
+  if(this.cursors.right.isDown) player.body.setVelocityX(speed);
+  if(this.cursors.up.isDown) player.body.setVelocityY(-speed);
+  if(this.cursors.down.isDown) player.body.setVelocityY(speed);
+}
 
-            // 1. Corpo (Zoy Blue)
-            ctx.fillStyle = ROBOT_COLOR;
-            ctx.fillRect(-bodySize / 2, -bodySize / 2, bodySize, bodySize);
-            
-            // 2. Cabeça/Face (Branco) - Deslocada para frente (direção 0)
-            const headOffset = bodySize / 2;
-            ctx.fillStyle = FACE_COLOR;
-            ctx.beginPath();
-            ctx.arc(headOffset + headRadius * 0.2, 0, headRadius, 0, Math.PI * 2);
-            ctx.fill();
+// Expose some helpers to console for quick testing
+window.zoyHelpers = {
+  resetScore: ()=>{ score=0; localStorage.setItem('zoy_score',0); document.getElementById('scoreDisplay').innerText='Score: 0'; location.reload(); },
+  setModeToEnem: ()=>{ MODE.name='ENEM'; MODE.doors=10; MODE.pointsPerDoor=1; alert('Modo alterado para ENEM — recarregue a página para ver 10 portas.'); }
+};
 
-            // 3. Antenas/Indicador de Direção (Zoy Dark)
-            ctx.fillStyle = '#0f172a';
-            const antennaLength = robotSize * 0.3;
-            const antennaWidth = robotSize * 0.08;
-
-            // Antena Superior
-            ctx.fillRect(headOffset + headRadius * 0.2, -headRadius - antennaLength, antennaWidth, antennaLength);
-            // Antena Inferior
-            ctx.fillRect(headOffset + headRadius * 0.2, headRadius, antennaWidth, antennaLength);
-
-
-            ctx.restore();
-        }
-
-
-        function drawMaze() {
-            if (!ctx) return;
-
-            const canvasSize = Math.min(canvas.width, canvas.height);
-            // MAZE_SIZE é dinâmico agora (5 ou 7)
-            const tileSize = canvasSize / MAZE_SIZE; 
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // 1. Desenha as células do labirinto
-            for (let y = 0; y < MAZE_SIZE; y++) {
-                for (let x = 0; x < MAZE_SIZE; x++) {
-                    const tile = MAZE[y][x];
-                    
-                    ctx.fillStyle = (tile === 0) ? '#475569' : '#e2e8f0'; // Parede vs Caminho 
-                    if (tile === 3) {
-                        ctx.fillStyle = '#fcd34d'; // Fim (Objetivo - Amarelo)
-                        // Desenha um alvo ou algo para o objetivo
-                        ctx.beginPath();
-                        ctx.arc(x * tileSize + tileSize / 2, y * tileSize + tileSize / 2, tileSize * 0.3, 0, Math.PI * 2);
-                        ctx.fillStyle = '#cc8c00';
-                        ctx.fill();
-                        ctx.strokeStyle = '#fff';
-                        ctx.lineWidth = 3;
-                        ctx.stroke();
-
-                    } else if (tile === 2) {
-                        ctx.fillStyle = '#bbf7d0'; // Início (Verde claro)
-                    }
-                    
-                    ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
-                    ctx.strokeStyle = '#94a3b8';
-                    ctx.strokeRect(x * tileSize, y * tileSize, tileSize, tileSize);
-                }
-            }
-
-            // 2. Desenha o Robô Zoy (no lugar do Panda)
-            drawZoyRobot(currentPosition.x, currentPosition.y, tileSize, currentDirection);
-        }
-
-        // --- LÓGICA DE CONTROLE DE CÓDIGO (Interface com Blockly) ---
-        
-        /** * Gera o código a partir do workspace do Blockly e atualiza o painel de exibição. */
-        window.updateCodeDisplay = function() {
-            // A variável window.workspaceMaze é definida em zoy_jogos.js
-            if (!window.Blockly || !window.workspaceMaze) return;
-
-            // Gera o código em JavaScript (usando o Python Generator para simular a execução)
-            const code = Blockly.Python.workspaceToCode(window.workspaceMaze);
-            
-            // Envolve o código em uma função JS assíncrona para execução segura
-            const finalCode = `(async function() {\n${code}})();`;
-            
-            const displayElement = document.getElementById('generatedCodeDisplay');
-            
-            if (displayElement) {
-                displayElement.textContent = finalCode;
-            }
-            // Retorna o código final para uso na execução
-            return finalCode;
-        };
-        
-        /** * Inicia a execução do programa Blockly. */
-        window.executeProgram = async function() {
-            if (window.isRunning) return; // Evita múltiplas execuções
-            
-            const code = window.updateCodeDisplay(); // Pega o código mais recente
-            
-            if (!code || code.includes("Nenhum bloco conectado")) {
-                window.updateStatus("Conecte os blocos para criar um programa.", 'bg-yellow-200', 'text-yellow-800');
-                return;
-            }
-            
-            window.resetGame(); // Reinicia o labirinto antes de começar
-            window.isRunning = true;
-            window.updateStatus('Executando programa...', 'bg-blue-200', 'text-blue-800');
-            
-            document.getElementById('btnExecutarPrograma').disabled = true;
-            document.getElementById('btnPararPrograma').disabled = false;
-
-            // Execução real do código JS gerado (com as APIs globais)
-            try {
-                // A função `eval` executa o código JS assíncrono que chama moveForward, turn, etc.
-                await eval(code); 
-            } catch (e) {
-                // Erros esperados que param o loop (colisão, vitória)
-                if (e.message !== 'Collision or Game Over' && e.message !== 'Game Over') {
-                    window.updateStatus(`ERRO DE EXECUÇÃO: ${e.message}`, 'bg-red-200', 'text-red-900');
-                    console.error("Erro na execução do programa Blockly:", e);
-                }
-            } finally {
-                if (window.isRunning) { // Se não foi parado por vitória, colisão ou erro
-                    window.updateStatus('Programa Terminado. Reinicie para tentar novamente.', 'bg-gray-200', 'text-gray-700');
-                }
-                window.isRunning = false;
-                document.getElementById('btnExecutarPrograma').disabled = false;
-                document.getElementById('btnPararPrograma').disabled = true;
-            }
-        }
-        
-        /** * Função para parar a execução pelo usuário. */
-        window.stopProgram = function() {
-            window.isRunning = false; 
-            window.updateStatus("Execução interrompida pelo usuário.", 'bg-gray-200', 'text-gray-700');
-            document.getElementById('btnExecutarPrograma').disabled = false;
-            document.getElementById('btnPararPrograma').disabled = true;
-        };
-
-
-        // --- INICIALIZAÇÃO E REDIMENSIONAMENTO ---
-
-        function resizeCanvas() {
-            const container = document.getElementById('gameArea');
-            if (!container || !canvas) return;
-            
-            // Garante que o canvas seja quadrado e se ajuste à área
-            const size = Math.min(container.clientWidth * 0.9, window.innerHeight * 0.8);
-            canvas.width = size;
-            canvas.height = size;
-            drawMaze();
-        }
-
-        function initGameEnvironment() {
-            canvas = document.getElementById('gameCanvas');
-            
-            if (!canvas) {
-                 console.error("Canvas não encontrado.");
-                 return;
-            }
-            
-            ctx = canvas.getContext('2d');
-            // Inicializa a referência global do elemento de status.
-            window.statusMessageElement = document.getElementById('statusMessage');
-            
-            window.addEventListener('resize', resizeCanvas);
-            
-            // Define a dificuldade inicial (padrão 'easy')
-            window.setDifficulty(document.getElementById('difficultySelector').value); 
-            resizeCanvas();
-        }
-
-        document.addEventListener("DOMContentLoaded", initGameEnvironment);
-    </script>
+</script>
 </body>
 </html>
