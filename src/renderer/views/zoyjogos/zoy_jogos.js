@@ -92,14 +92,24 @@ function defineMazeBlocksAndGenerators() {
       }
     };
 
-    Blockly.Python['controls_repeat_simple'] = function(block) {
-        const repeats = block.getFieldValue('TIMES');
-        const branch = Blockly.Python.statementToCode(block, 'DO');
-        
-        // CORRIGIDO: Agora gera a sintaxe correta do Python: for _ in range(N):
-        const code = `for _ in range(${repeats}):\n${branch}`;
-        return code;
-    };
+   Blockly.Python['controls_repeat_simple'] = function(block) {
+    // pega o número de repetições (garante inteiro)
+    const repeats = Number(block.getFieldValue('TIMES')) || 0;
+
+    // obtém o código do bloco interno (já com quebras de linha)
+    let branch = Blockly.Python.statementToCode(block, 'DO') || '';
+
+    // remove última nova linha se existir
+    if (branch.endsWith('\n')) branch = branch.slice(0, -1);
+
+    // indenta duas posições cada linha do corpo para ficar dentro do bloco { ... }
+    const indented = branch.split('\n').map(line => line ? '  ' + line : '').join('\n');
+
+    // gera loop JS assíncrono
+    const code = `for (let i = 0; i < ${repeats}; i++) {\n${indented}\n}\n`;
+    return code;
+};
+
     
     // --- BLOCO: If com verificação de caminho ---
     Blockly.Blocks['controls_if_path'] = {
@@ -123,17 +133,25 @@ function defineMazeBlocksAndGenerators() {
       }
     };
 
-    Blockly.Python['controls_if_path'] = function(block) {
-        const direction = block.getFieldValue('DIRECTION');
-        const branch = Blockly.Python.statementToCode(block, 'DO');
-        
-        // Gera a condição usando a função real do HTML
-        let code = '';
-        code += `if (window.isPath('${direction}')) {\n`;
-        code += Blockly.Python.addIndent(branch);
-        code += '}\n';
-        return code;
-    };
+   Blockly.Python['controls_if_path'] = function(block) {
+    const direction = block.getFieldValue('DIRECTION');
+
+    // obtém o código do bloco interno (já com quebras de linha)
+    let branch = Blockly.Python.statementToCode(block, 'DO') || '';
+
+    // remove nova linha final (se houver)
+    if (branch.endsWith('\n')) branch = branch.slice(0, -1);
+
+    // indenta cada linha do bloco interno para ficar dentro do { ... }
+    const indented = branch.split('\n').map(line => line ? '  ' + line : '').join('\n');
+
+    // Gera JS assíncrono (usa await para permitir chamadas await no corpo)
+    // Caso prefira que isPath seja síncrono, remova o `await` abaixo.
+    const code = `if (await window.isPath('${direction}')) {\n${indented}\n}\n`;
+    return code;
+};
+
+    
 }
 
 
