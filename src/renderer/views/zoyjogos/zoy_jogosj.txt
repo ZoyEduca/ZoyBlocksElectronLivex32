@@ -1,0 +1,258 @@
+/**
+ * Lógica de inicialização do Blockly e definição dos blocos para o jogo de Labirinto.
+ * * Segue o padrão de carregamento de assets via window.electronAPI.utils.loadAssetsGroup.
+ * * Usa o namespace Blockly.Python para os geradores, pois 'javascript_compressed.js' está ausente.
+ */
+
+const { loadAssetsGroup } = window.electronAPI.utils;
+let workspaceMaze = null;
+
+// --- 1. DEFINIÇÃO DOS ASSETS DO BLOCKLY (Alinhado com home.js) ---
+const assetsToLoad = {
+  blocklyCore: [
+    {
+      name: "blockly_min",
+      type: "js",
+      path: `${window.paths.blockly.core}blockly.min.js`, 
+    },
+    {
+      name: "python_compressed",
+      type: "js",
+      path: `${window.paths.blockly.core}python_compressed.js`, 
+    },
+  ],
+  blocklyMsg: [
+    { name: "pt-br", type: "js", path: `${window.paths.blockly.msg}pt-br.js` },
+  ],
+};
+
+
+// --- 2. FUNÇÃO PARA DEFINIR BLOCOS E GERADORES (Executada após o carregamento do Blockly) ---
+function defineMazeBlocksAndGenerators() {
+  
+  // Bloco: Mover para frente
+  Blockly.Blocks['maze_moveForward'] = {
+    init: function() {
+      this.jsonInit({
+        "message0": "Mover para Frente",
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": "#CC6666",
+        "tooltip": "Move o Panda uma casa na direção atual.",
+      });
+    }
+  };
+
+  // Bloco: Girar
+  Blockly.Blocks['maze_turn'] = {
+    init: function() {
+      this.jsonInit({
+        "message0": "Virar %1",
+        "args0": [
+            {
+                "type": "field_dropdown",
+                "name": "DIRECTION",
+                "options": [
+                    ["Esquerda", "LEFT"],
+                    ["Direita", "RIGHT"]
+                ]
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": "#CC6666",
+        "tooltip": "Vira o Panda 90 graus para a direção selecionada.",
+      });
+    }
+  };
+
+  // Bloco: Repetição Simples (controls_repeat_simple)
+  Blockly.Blocks['controls_repeat_simple'] = {
+    init: function() {
+      this.jsonInit({
+        "message0": "Repetir %1 vezes",
+        "args0": [
+            {
+                "type": "field_number",
+                "name": "TIMES",
+                "value": 4,
+                "min": 1,
+                "precision": 1
+            }
+        ],
+        "message1": "faça %1",
+        "args1": [
+            {
+                "type": "input_statement",
+                "name": "DO"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": "#5CB85C",
+        "tooltip": "Repete uma sequência de comandos o número de vezes especificado.",
+      });
+    }
+  };
+
+  // Bloco: Se Caminho Existe (controls_if_path)
+  Blockly.Blocks['controls_if_path'] = {
+    init: function() {
+      this.jsonInit({
+        "message0": "Se há caminho para %1",
+        "args0": [
+            {
+                "type": "field_dropdown",
+                "name": "DIRECTION",
+                "options": [
+                    ["Frente", "AHEAD"],
+                    ["Esquerda", "LEFT"],
+                    ["Direita", "RIGHT"]
+                ]
+            }
+        ],
+        "message1": "faça %1",
+        "args1": [
+            {
+                "type": "input_statement",
+                "name": "DO"
+            }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": "#5CB85C",
+        "tooltip": "Executa os blocos internos se houver um caminho livre na direção especificada.",
+      });
+    }
+  };
+
+
+  // --- 3. GERADORES DE CÓDIGO (USANDO O NAMESPACE Blockly.Python) ---
+  
+  const MOVE_DELAY = 500;
+  const TURN_DELAY = 300;
+  
+  // Função auxiliar de atraso
+  const delayCode = `await new Promise(resolve => setTimeout(resolve, 100));`;
+
+  // Gerador Python/JS: Mover para frente
+  Blockly.Python['maze_moveForward'] = function(block) {
+    // moveForward retorna true se o movimento foi bem-sucedido
+    const code = 
+        `if (await moveForward()) { await new Promise(resolve => setTimeout(resolve, ${MOVE_DELAY})); } else { throw new Error('Collision or Game Over'); }\n`;
+    return code;
+  };
+
+  // Gerador Python/JS: Girar
+  Blockly.Python['maze_turn'] = function(block) {
+    const direction = block.getFieldValue('DIRECTION');
+    const code = 
+        `if (await turn('${direction}')) { await new Promise(resolve => setTimeout(resolve, ${TURN_DELAY})); } else { throw new Error('Collision or Game Over'); }\n`;
+    return code;
+  };
+
+  // Gerador Python/JS: Repetição Simples
+  Blockly.Python['controls_repeat_simple'] = function(block) {
+    const repeats = Number(block.getFieldValue('TIMES'));
+    let branch = Blockly.Python.statementToCode(block, 'DO');
+    branch = Blockly.Python.addLoopTrap(branch, block.id);
+    
+    const loopVar = Blockly.Python.nameDB_.getReservedName('i', Blockly.Names.NameType.VARIABLE);
+    
+    // Retorna código JS (loop for)
+    const code = 
+      `for (var ${loopVar} = 0; ${loopVar} < ${repeats}; ${loopVar}++) {\n` +
+      `  if (!window.isRunning) break;\n` +
+      branch +
+      `}\n`;
+    return code;
+  };
+
+  // Gerador Python/JS: Se houver caminho
+  Blockly.Python['controls_if_path'] = function(block) {
+    const direction = block.getFieldValue('DIRECTION');
+    const branch = Blockly.Python.statementToCode(block, 'DO');
+    
+    // Retorna código JS (if statement)
+    const code = 
+      `if (isPath('${direction}')) {\n` + 
+      branch + 
+      `}\n`;
+    return Blockly.Python.scrub_(block, code);
+  };
+}
+
+
+// --- 4. FUNÇÃO DE INICIALIZAÇÃO DO WORKSPACE ---
+
+function initBlocklyMaze() {
+  const blocklyDiv = document.getElementById('blocklyGameWorkspace');
+  const toolbox = document.getElementById('toolboxMaze');
+
+  if (!blocklyDiv || !toolbox) {
+      console.error("Elementos Blockly (workspace ou toolbox) não encontrados.");
+      return;
+  }
+
+  // Opções de Configuração do Workspace
+  const options = {
+    toolbox: toolbox,
+    trashcan: true,
+    zoom: {
+      controls: true,
+      wheel: true,
+      startScale: 1.0,
+      maxScale: 3,
+      minScale: 0.3,
+      scaleSpeed: 1.2
+    },
+    scrollbars: true,
+    horizontalLayout: false,
+    media: `${window.paths.blockly.core}media/`, 
+    rtl: false,
+    renderer: 'zelos', 
+    theme: Blockly.Themes.Classic,
+  };
+  
+  // Injeta o workspace
+  workspaceMaze = Blockly.inject(blocklyDiv, options);
+  
+  // Define a função global que o HTML usará para gerar o código
+  window.generateCode = function() {
+    // CRUCIAL: Usamos Blockly.Python para gerar o código (que é JS)
+    const code = Blockly.Python.workspaceToCode(workspaceMaze);
+    // Envolve o código em uma função JS assíncrona para permitir o uso de 'await'
+    return `(async function() {\n${code}})();`; 
+  };
+  
+  // Redimensiona o workspace quando a janela muda de tamanho
+  const onResize = () => {
+    if (workspaceMaze) {
+      Blockly.svgResize(workspaceMaze);
+    }
+  };
+  window.addEventListener('resize', onResize, false);
+  onResize();
+}
+
+
+// --- 5. EXECUÇÃO DA INICIALIZAÇÃO (Ponto de entrada) ---
+
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        // PASSO 1: Carrega os scripts do Blockly (Core e Python Generator)
+        await loadAssetsGroup(assetsToLoad.blocklyCore);
+        
+        // PASSO 2: Agora que o Blockly (e o Python Generator) estão DEFINIDOS, registramos os blocos
+        defineMazeBlocksAndGenerators(); 
+        
+        // PASSO 3: Carrega as mensagens de tradução (opcionalmente)
+        await loadAssetsGroup(assetsToLoad.blocklyMsg);
+        
+        // PASSO 4: Inicializa o Workspace e injeta na DOM
+        initBlocklyMaze();
+
+    } catch (error) {
+        console.error("Erro fatal ao carregar assets do Blockly ou inicializar o workspace:", error);
+    }
+});

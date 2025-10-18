@@ -53,6 +53,21 @@ const createWindow = () => {
     mainWindow.webContents.closeDevTools();
   }
 
+    // --- NOVO: Handler IPC para Navegação (Go Back) ---
+  ipcMain.on('navigate-to-view', (event, viewName) => {
+    let filePath;
+    // Assume que 'home' é o retorno para Robótica
+    if (viewName === 'home') {
+        filePath = path.join(__dirname, "..", "renderer", "views", "home", "home.html");
+    } 
+    // Outras views poderiam ser adicionadas aqui
+    // else if (viewName === 'outra-view') { ... }
+
+    if (filePath) {
+        mainWindow.loadFile(filePath);
+    }
+  });
+
   // Manipulador para o retorno à tela inicial
   ipcMain.handle("voltar-para-home", () => {
     mainWindow.loadFile(
@@ -60,7 +75,6 @@ const createWindow = () => {
     );
   });
 };
-
 
 
 
@@ -126,6 +140,8 @@ ipcMain.handle("perguntar", async (event, pergunta) => {
     pythonProcess.stdin.write(JSON.stringify({ pergunta }) + "\n");
   });
 });
+
+
 
 // === LOG DE CONVERSAS ===
 ipcMain.handle('log-conversation', async (event, pergunta, resposta) => {

@@ -83,4 +83,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // Funções para envio de dados e execução de código
    executarCodigo: (codigo) => ipcRenderer.invoke('executar-codigo', codigo),
    enviarComandoSerial: (comando) => ipcRenderer.invoke('enviar-comando-serial', comando),
+
+   // Adiciona a função goBack, que envia uma mensagem IPC para o Main
+   // Usamos 'navigate-to-view' com o nome da view de destino
+   goBack: () => { ipcRenderer.send('navigate-to-view', 'home'); 
+}
 });
