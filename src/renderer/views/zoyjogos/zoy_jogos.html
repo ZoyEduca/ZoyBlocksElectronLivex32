@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zoy Jogos - Labirinto</title>
+    <title>Zoy Jogos - Labirinto com Níveis</title>
     <!-- Carregando Tailwind CSS para estética e responsividade -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -25,7 +25,6 @@
         }
     </script>
     <!-- Ajustando o caminho do CSS: Sobe 1 nível (views/) e entra em home/ -->
-    <!-- Presumindo que o home.css está em uma pasta acima/home/ -->
     <link rel="stylesheet" href="../home/home.css"> 
     <style>
         /* Estilos específicos para a tela de jogos */
@@ -88,7 +87,7 @@
             max-width: 100%;
             height: auto;
             border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 4, 0, 0.05);
             background-color: #fff;
             margin-top: 10px;
         }
@@ -115,7 +114,7 @@
         
         <!-- BARRA DE CONTROLE E CÓDIGO -->
         <div id="controls">
-            <!-- NOVO BOTÃO DE VOLTAR -->
+            <!-- BOTÃO DE VOLTAR PARA ROBÓTICA -->
             <button 
                 class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out" 
                 id="btnVoltar" 
@@ -146,6 +145,15 @@
                 Parar
             </button>
             
+            <!-- Seletor de Dificuldade -->
+            <label for="difficultySelector" class="text-sm font-medium text-gray-700">Dificuldade:</label>
+            <select id="difficultySelector" onchange="window.setDifficulty(this.value)"
+                    class="py-2 px-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-zoy-blue focus:border-zoy-blue sm:text-sm">
+                <option value="easy">Fácil (5x5)</option>
+                <option value="medium">Médio (5x5)</option>
+                <option value="hard">Difícil (7x7)</option>
+            </select>
+
             <!-- Exibição do Status -->
             <div id="statusMessage" class="px-3 py-1 rounded-lg text-sm bg-gray-100 text-gray-700 font-medium transition duration-150 ease-in-out">
                 Pronto para começar.
@@ -159,7 +167,7 @@
         <div id="gameAndBlockly">
             <!-- Área do Jogo/Labirinto -->
             <div id="gameArea">
-                <h3 class="text-xl font-bold mb-4 text-zoy-dark">Labirinto do Panda</h3>
+                <h3 class="text-xl font-bold mb-4 text-zoy-dark">Labirinto do Robô Zoy</h3>
                 <canvas id="gameCanvas" width="500" height="500"></canvas>
                 <button 
                     class="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out" 
@@ -195,30 +203,79 @@
         let canvas, ctx;
         window.isRunning = false; // Flag para controlar a execução (usada por zoy_jogos.js)
         
-        // Configurações do Labirinto (5x5)
-        // 0=Parede, 1=Caminho, 2=Início (Panda), 3=Fim (Comida)
-        const MAZE_SIZE = 5;
-        const MAZE = [
-            [2, 1, 0, 1, 0], 
-            [0, 1, 1, 1, 0],
-            [0, 0, 0, 1, 1],
-            [1, 1, 1, 0, 1],
-            [0, 0, 1, 3, 1]  
-        ];
+        // 0=Parede, 1=Caminho, 2=Início (Robô Zoy), 3=Fim (Objetivo)
+        
+        // --- 1. DEFINIÇÃO DOS NÍVEIS DE DIFICULDADE ---
+        const MAZES = {
+            easy: {
+                size: 5,
+                layout: [
+                    [2, 1, 0, 1, 0], 
+                    [0, 1, 1, 1, 0],
+                    [0, 0, 0, 1, 1],
+                    [1, 1, 1, 0, 1],
+                    [0, 0, 1, 3, 1]  
+                ]
+            },
+            medium: {
+                size: 5,
+                layout: [
+                    [2, 1, 0, 1, 1], 
+                    [1, 1, 0, 0, 1],
+                    [1, 0, 1, 1, 1],
+                    [1, 0, 1, 0, 0],
+                    [1, 1, 1, 0, 3]  
+                ]
+            },
+            hard: {
+                size: 7,
+                layout: [
+                    [2, 1, 1, 0, 1, 1, 1], 
+                    [0, 0, 1, 0, 1, 0, 1],
+                    [1, 1, 1, 1, 1, 0, 1],
+                    [1, 0, 0, 0, 1, 1, 1],
+                    [1, 1, 1, 1, 0, 1, 0],
+                    [0, 1, 0, 1, 0, 1, 1],
+                    [1, 1, 0, 1, 1, 1, 3]
+                ]
+            }
+        };
 
+        let currentDifficulty = 'easy';
+        let MAZE_SIZE = MAZES[currentDifficulty].size;
+        let MAZE = MAZES[currentDifficulty].layout;
+        
         let currentPosition = { x: 0, y: 0 }; 
         let currentDirection = 0; // 0: Right, 1: Down, 2: Left, 3: Up
 
         // Referência global para o elemento de status
         window.statusMessageElement = null; 
+        
+        // Cor do Robô (Zoy Blue)
+        const ROBOT_COLOR = '#1e40af'; 
+        const FACE_COLOR = '#ffffff';
 
-        // --- FUNÇÕES AUXILIARES DE ESTADO (AGORA GLOBAIS) ---
+        // --- FUNÇÕES AUXILIARES DE ESTADO ---
 
-        /** * Função global para atualizar o status. Usada por zoy_jogos.js. 
-         * Acessa window.statusMessageElement para garantir o escopo correto.
-         */
+        /** Função para mudar a dificuldade e recarregar o labirinto. */
+        window.setDifficulty = function(newDifficulty) {
+            currentDifficulty = newDifficulty;
+            const mazeConfig = MAZES[newDifficulty];
+            
+            if (!mazeConfig) {
+                console.error(`Dificuldade desconhecida: ${newDifficulty}`);
+                return;
+            }
+            
+            MAZE = mazeConfig.layout;
+            MAZE_SIZE = mazeConfig.size;
+            window.resetGame(); // Reinicia o jogo com o novo labirinto
+            window.updateStatus(`Nível alterado para ${newDifficulty.toUpperCase()}.`);
+        }
+
+
+        /** Função global para atualizar o status. */
         window.updateStatus = function(message, bgClass = 'bg-gray-100', textClass = 'text-gray-700') {
-            // Verifica se o elemento de status foi inicializado 
             if (!window.statusMessageElement) {
                 console.error("ERRO DE DOM: Elemento statusMessage não encontrado.");
                 return;
@@ -245,11 +302,14 @@
             }
             window.updateStatus('Labirinto Reiniciado. Pronto para programar!');
             drawMaze();
+            // Garante que os botões estão no estado correto
+            document.getElementById('btnExecutarPrograma').disabled = false;
+            document.getElementById('btnPararPrograma').disabled = true;
         }
 
         // --- FUNÇÕES DE INTERAÇÃO DO JOGO (Chamadas pelo código Blockly gerado) ---
         
-        /** Move o Panda uma casa para frente. */
+        /** Move o Robô uma casa para frente. */
         window.moveForward = async function() {
             if (!window.isRunning) return false;
             
@@ -283,13 +343,13 @@
                 throw new Error('Collision or Game Over');
             }
             
-            // 3. Move o Panda
+            // 3. Move o Robô
             currentPosition = { x: newX, y: newY };
             drawMaze();
 
             // 4. Verifica vitória (tile 3)
             if (nextTile === 3) {
-                window.updateStatus('Parabéns! O Panda encontrou a Comida!', 'bg-green-200', 'text-green-800');
+                window.updateStatus('Parabéns! O Robô Zoy encontrou o Objetivo!', 'bg-green-200', 'text-green-800');
                 window.isRunning = false;
                 throw new Error('Game Over'); 
             }
@@ -297,7 +357,7 @@
             return true;
         };
 
-        /** Vira o Panda. */
+        /** Vira o Robô. */
         window.turn = async function(direction) {
             if (!window.isRunning) return false;
             
@@ -321,16 +381,19 @@
                 dir = (currentDirection + 3) % 4;
             } else if (checkDirection === 'RIGHT') {
                 dir = (currentDirection + 1) % 4;
+            } else if (checkDirection === 'FORWARD') {
+                // Usa a direção atual
             }
             
             let checkX = currentPosition.x;
             let checkY = currentPosition.y;
 
+            // 0: Right (+x), 1: Down (+y), 2: Left (-x), 3: Up (-y)
             switch (dir) {
-                case 0: checkX++; break; // Right
-                case 1: checkY++; break; // Down
-                case 2: checkX--; break; // Left
-                case 3: checkY--; break; // Up
+                case 0: checkX++; break; 
+                case 1: checkY++; break; 
+                case 2: checkX--; break; 
+                case 3: checkY--; break; 
             }
 
             // Verifica limites e paredes
@@ -343,11 +406,53 @@
         
         // --- LÓGICA DE DESENHO (Canvas) ---
 
+        /**
+         * Desenha o Robô Zoy estilizado no canvas.
+         */
+        function drawZoyRobot(x, y, tileSize, direction) {
+            const centerX = x * tileSize + tileSize / 2;
+            const centerY = y * tileSize + tileSize / 2;
+            const robotSize = tileSize * 0.7;
+            const bodySize = robotSize * 0.7;
+            const headRadius = robotSize * 0.25;
+
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            // Rotaciona: 0=Right (0 rad), 1=Down (PI/2), 2=Left (PI), 3=Up (3PI/2)
+            ctx.rotate(direction * Math.PI / 2); 
+
+            // 1. Corpo (Zoy Blue)
+            ctx.fillStyle = ROBOT_COLOR;
+            ctx.fillRect(-bodySize / 2, -bodySize / 2, bodySize, bodySize);
+            
+            // 2. Cabeça/Face (Branco) - Deslocada para frente (direção 0)
+            const headOffset = bodySize / 2;
+            ctx.fillStyle = FACE_COLOR;
+            ctx.beginPath();
+            ctx.arc(headOffset + headRadius * 0.2, 0, headRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 3. Antenas/Indicador de Direção (Zoy Dark)
+            ctx.fillStyle = '#0f172a';
+            const antennaLength = robotSize * 0.3;
+            const antennaWidth = robotSize * 0.08;
+
+            // Antena Superior
+            ctx.fillRect(headOffset + headRadius * 0.2, -headRadius - antennaLength, antennaWidth, antennaLength);
+            // Antena Inferior
+            ctx.fillRect(headOffset + headRadius * 0.2, headRadius, antennaWidth, antennaLength);
+
+
+            ctx.restore();
+        }
+
+
         function drawMaze() {
             if (!ctx) return;
 
             const canvasSize = Math.min(canvas.width, canvas.height);
-            const tileSize = canvasSize / MAZE_SIZE;
+            // MAZE_SIZE é dinâmico agora (5 ou 7)
+            const tileSize = canvasSize / MAZE_SIZE; 
             
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
@@ -358,7 +463,16 @@
                     
                     ctx.fillStyle = (tile === 0) ? '#475569' : '#e2e8f0'; // Parede vs Caminho 
                     if (tile === 3) {
-                        ctx.fillStyle = '#fcd34d'; // Fim (Comida - Amarelo)
+                        ctx.fillStyle = '#fcd34d'; // Fim (Objetivo - Amarelo)
+                        // Desenha um alvo ou algo para o objetivo
+                        ctx.beginPath();
+                        ctx.arc(x * tileSize + tileSize / 2, y * tileSize + tileSize / 2, tileSize * 0.3, 0, Math.PI * 2);
+                        ctx.fillStyle = '#cc8c00';
+                        ctx.fill();
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+
                     } else if (tile === 2) {
                         ctx.fillStyle = '#bbf7d0'; // Início (Verde claro)
                     }
@@ -369,38 +483,13 @@
                 }
             }
 
-            // 2. Desenha o Panda
-            ctx.fillStyle = '#34d399'; 
-            ctx.beginPath();
-            
-            const pandaX = currentPosition.x * tileSize + tileSize / 2;
-            const pandaY = currentPosition.y * tileSize + tileSize / 2;
-            const pandaRadius = tileSize * 0.4;
-            
-            ctx.arc(pandaX, pandaY, pandaRadius, 0, Math.PI * 2);
-            ctx.fill();
-
-            // 3. Desenha a direção do Panda (indicador)
-            ctx.fillStyle = '#1e40af';
-            ctx.save();
-            ctx.translate(pandaX, pandaY);
-            // Rotaciona: 0=Right (0 rad), 1=Down (PI/2), 2=Left (PI), 3=Up (3PI/2)
-            ctx.rotate(currentDirection * Math.PI / 2); 
-            
-            ctx.beginPath();
-            ctx.moveTo(pandaRadius * 0.8, 0);
-            ctx.lineTo(-pandaRadius * 0.4, -pandaRadius * 0.4);
-            ctx.lineTo(-pandaRadius * 0.4, pandaRadius * 0.4);
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
+            // 2. Desenha o Robô Zoy (no lugar do Panda)
+            drawZoyRobot(currentPosition.x, currentPosition.y, tileSize, currentDirection);
         }
 
         // --- LÓGICA DE CONTROLE DE CÓDIGO (Interface com Blockly) ---
         
-        /** * Gera o código a partir do workspace do Blockly e atualiza o painel de exibição.
-         * Esta função é chamada pelo listener do workspace (em zoy_jogos.js).
-         */
+        /** * Gera o código a partir do workspace do Blockly e atualiza o painel de exibição. */
         window.updateCodeDisplay = function() {
             // A variável window.workspaceMaze é definida em zoy_jogos.js
             if (!window.Blockly || !window.workspaceMaze) return;
@@ -419,6 +508,53 @@
             // Retorna o código final para uso na execução
             return finalCode;
         };
+        
+        /** * Inicia a execução do programa Blockly. */
+        window.executeProgram = async function() {
+            if (window.isRunning) return; // Evita múltiplas execuções
+            
+            const code = window.updateCodeDisplay(); // Pega o código mais recente
+            
+            if (!code || code.includes("Nenhum bloco conectado")) {
+                window.updateStatus("Conecte os blocos para criar um programa.", 'bg-yellow-200', 'text-yellow-800');
+                return;
+            }
+            
+            window.resetGame(); // Reinicia o labirinto antes de começar
+            window.isRunning = true;
+            window.updateStatus('Executando programa...', 'bg-blue-200', 'text-blue-800');
+            
+            document.getElementById('btnExecutarPrograma').disabled = true;
+            document.getElementById('btnPararPrograma').disabled = false;
+
+            // Execução real do código JS gerado (com as APIs globais)
+            try {
+                // A função `eval` executa o código JS assíncrono que chama moveForward, turn, etc.
+                await eval(code); 
+            } catch (e) {
+                // Erros esperados que param o loop (colisão, vitória)
+                if (e.message !== 'Collision or Game Over' && e.message !== 'Game Over') {
+                    window.updateStatus(`ERRO DE EXECUÇÃO: ${e.message}`, 'bg-red-200', 'text-red-900');
+                    console.error("Erro na execução do programa Blockly:", e);
+                }
+            } finally {
+                if (window.isRunning) { // Se não foi parado por vitória, colisão ou erro
+                    window.updateStatus('Programa Terminado. Reinicie para tentar novamente.', 'bg-gray-200', 'text-gray-700');
+                }
+                window.isRunning = false;
+                document.getElementById('btnExecutarPrograma').disabled = false;
+                document.getElementById('btnPararPrograma').disabled = true;
+            }
+        }
+        
+        /** * Função para parar a execução pelo usuário. */
+        window.stopProgram = function() {
+            window.isRunning = false; 
+            window.updateStatus("Execução interrompida pelo usuário.", 'bg-gray-200', 'text-gray-700');
+            document.getElementById('btnExecutarPrograma').disabled = false;
+            document.getElementById('btnPararPrograma').disabled = true;
+        };
+
 
         // --- INICIALIZAÇÃO E REDIMENSIONAMENTO ---
 
@@ -426,6 +562,7 @@
             const container = document.getElementById('gameArea');
             if (!container || !canvas) return;
             
+            // Garante que o canvas seja quadrado e se ajuste à área
             const size = Math.min(container.clientWidth * 0.9, window.innerHeight * 0.8);
             canvas.width = size;
             canvas.height = size;
@@ -446,7 +583,8 @@
             
             window.addEventListener('resize', resizeCanvas);
             
-            window.resetGame(); 
+            // Define a dificuldade inicial (padrão 'easy')
+            window.setDifficulty(document.getElementById('difficultySelector').value); 
             resizeCanvas();
         }
 
