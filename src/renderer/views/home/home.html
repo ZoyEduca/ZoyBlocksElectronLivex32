@@ -17,54 +17,59 @@
 
 
 
-    <!-- Navbar Atualize conforme as novas regras de importação-->
-    <nav class="navbar navbar-expand-lg custom-navbar">
-        <div class="container-fluid">
+<nav class="navbar navbar-expand-lg custom-navbar">
+    <div class="container-fluid">
 
-            <!-- Logo com versão - add img-->
-            <a class="navbar-brand" href="/"> <img src="" alt="Logo Zoy" class="logo-img" title="Zoy Blocks v0.7.0">
-            </a>
+        <a class="navbar-brand" href="/">
+            <img src="../../../assets/imgs/logo_zoy.png" alt="Logo Zoy" class="logo-img" title="Zoy Blocks v0.7.0">
+        </a>
+        
+        <button class="btn btn-success py-2 me-3 my-auto" id="btnExecutarCodigo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
+            <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
+            </svg>
+            Executar Código
+        </button>
 
-            <!-- Botão hamburguer para mobile -->
-            <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarMenu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+        <button id="abrirZoyGPTBtn" class="btn btn-secondary me-3 my-auto d-none d-lg-block">Abrir ZoyGPT</button>
 
-            <!-- Menus -->
-            <div class="collapse navbar-collapse justify-content-end" id="navbarMenu">
-                <ul class="navbar-nav align-items-center gap-lg-3 gap-2">
 
-                     <!-- NOVO BOTÃO DE JOGOS: Aponta para a nova página -->
-                    <li class="nav-item">
-                        <a class="nav-link custom-link" href="../zoyjogos/zoy_jogos.html" id="btnZoyJogos">
-                            <span class="d-none d-lg-inline">🎮</span> Zoy Jogos
-                        </a>
-                    </li>
+        <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-                    <!-- Dropdown: Arquivo -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle custom-link" href="#" role="button"
-                            data-bs-toggle="dropdown">
-                            Arquivo
-                        </a>
-                        <!-- Funções não existe ainda -->
-                        <ul class="dropdown-menu">
-                            <li>TEste</li>
-                            <!-- <li><a class="dropdown-item" href="#" onclick="salvarProjeto()">Salvar Projeto</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="carregarProjeto()">Carregar Projeto</a></li> -->
-                        </ul>
-                    </li>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarMenu">
+            <ul class="navbar-nav align-items-center gap-lg-3 gap-2">
+                
+                <li class="nav-item d-lg-none">
+                    <button id="abrirZoyGPTBtnMobile" class="btn btn-secondary w-100 mt-3">Abrir ZoyGPT</button>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link custom-link" href="../zoyjogos/zoy_jogos.html" id="btnZoyJogos">
+                        <span class="d-none d-lg-inline">🎮</span> Zoy Jogos
+                    </a>
+                </li>
 
-                    <!-- Link: Ajuda -->
-                    <li class="nav-item">
-                        <a class="btn custom-btn" href="https://zoy.com.br" target="_blank">Ajuda</a>
-                    </li>
-                </ul>
-            </div>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle custom-link" href="#" role="button"
+                        data-bs-toggle="dropdown">
+                        Arquivo
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="salvarProjeto()">Salvar Projeto</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="carregarProjeto()">Carregar Projeto</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a class="btn custom-btn" href="https://zoy.com.br" target="_blank">Ajuda</a>
+                </li>
+            </ul>
         </div>
-    </nav>
-
+    </div>
+</nav>
 
 
 
@@ -82,6 +87,8 @@
 
         <!-- SideBar Lado direito -->
         <div id="sidebarRight" class="container-fluid">
+            
+
 
             <!-- Opções de Idioma -->
             <div class="language-selector">
@@ -110,9 +117,9 @@
                                 </optgroup>
 
                                 <optgroup label="Arduino">
-                                    <!-- <option value="arduino_nano">Arduino Nano</option>
+                                    <option value="arduino_nano">Arduino Nano</option>
                                     <option value="arduino_uno">Arduino Uno</option>
-                                    <option value="arduino_lily">Arduino Lilyad</option> -->
+                                    <option value="arduino_lily">Arduino Lilyad</option>
                                 </optgroup>
                             </select>
                         </div>
@@ -123,13 +130,13 @@
                             <button id="btnListarPortas" class="btn btn-secondary w-100 py-2">ListarPortas</button>
                         </div>
                         <div class="col-6">
-                            <!-- <select id="selectBaudrate" class="form-select custom_select w-100 py-2">
-                        <option value="0">9600</option>
-                        <option value="1">19200</option>
-                        <option value="2">38400</option>
-                        <option value="3">57600</option>
-                        <option value="4" selected>115200</option>
-                    </select> -->
+                        <select id="selectBaudrate" class="form-select custom_select w-100 py-2">
+                                     <option value="0">9600</option>
+                                     <option value="1">19200</option>
+                                     <option value="2">38400</option>
+                                    <option value="3">57600</option>
+                                  <option value="4" selected>115200</option>
+                             </select> 
                         </div>
                         <div class="col-6">
                             <button id="btnConectar" class="btn btn-warning w-100 py-2">Conectar</button>
@@ -157,7 +164,19 @@
                     <span class="carousel-control-next-icon"></span>
                 </button>
             </div>
-
+             
+                            <div class="mt-3">
+                    <div class="terminal-header">
+                        <h6>Terminal de Comunicação</h6>
+                        <div class="terminal-controles">
+                            <button class="btn btn-sm btn-info" id="abrirTerminalCompletoBtn">Terminal Completo</button>
+                            <button class="btn btn-sm btn-danger" id="limparTerminalBtn">Limpar Terminal</button>
+                        </div>
+                    </div>
+                    <div id="terminal"
+                        style="height: 150px; overflow-y: auto; background: #000; color: #0f0; padding: 5px; font-family: monospace; font-size: 12px; border: 1px solid #ccc;">
+                    </div>
+                </div>
 
             <!-- Area de Código -->
             <div class="mt-3">
@@ -165,17 +184,10 @@
                 <pre id="codigoPython"># Código Python aparecerá aqui</pre>
             </div>
 
-            <div class="mt-3">
-                <button class="btn btn-success py-2" id="btnExecutarCodigo">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
-                    <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
-                    </svg>
-                    Executar Código
-                </button>
-            </div>
 
-            <button id="abrirTerminalCompletoBtn" class="btn btn-primary mt-3">Abrir Terminal Completo</button>
-            <button id="abrirZoyGPTBtn" class="btn btn-secondary mt-3">Abrir ZoyGPT</button>
+
+           <!--- <button id="abrirTerminalCompletoBtn" class="btn btn-primary mt-3">Abrir Terminal Completo</button> -->
+           
 
         </div>
         
