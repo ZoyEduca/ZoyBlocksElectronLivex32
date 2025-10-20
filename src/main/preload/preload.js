@@ -65,7 +65,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Fuções para conexão de dispositivos
   listarPortas: () => ipcRenderer.invoke('listar-portas'),
-  conectarPorta: (porta) => ipcRenderer.invoke('conectar-porta', porta),
+  conectarPorta: (porta, baudrate) => ipcRenderer.invoke('conectar-porta', porta, baudrate),
   desconectarPorta: () => ipcRenderer.invoke('desconectar-porta'),
 
   // Utils globais disponíveis para todas as views - não usa ipcRenderer porque é tudo direto no renderer, não há comunicação com o main ou outro processo fora do renderer

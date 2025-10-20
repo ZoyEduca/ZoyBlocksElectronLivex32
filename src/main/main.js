@@ -216,15 +216,47 @@ function startPythonProcess() {
 // ----------------------------------------------------------------------------
 
 ipcMain.handle("listar-portas", () => serialService.listarPortas());
-ipcMain.handle("conectar-porta", (event, porta) => {
-  if (typeof porta !== "string" || !porta.trim()) {
-    const mensagemErro = "A porta serial não foi selecionada ou é inválida.";
-    console.error(`[ERRO] ${mensagemErro}`);
-    return { status: false, mensagem: mensagemErro };
+
+ipcMain.handle("conectar-porta", async (event, porta, baudrate) => {
+  try {
+    if (typeof porta !== "string" || !porta.trim()) {
+      const mensagemErro = "A porta serial não foi selecionada ou é inválida.";
+      return { status: false, mensagem: mensagemErro };
+    }
+
+    // Tente conectar à porta serial
+    const resultado = await serialService.conectarPorta(porta, baudrate);
+    if (!resultado) {
+      const mensagemErro = "Falha ao conectar à porta serial.";
+      return { status: false, mensagem: mensagemErro };
+    }
+
+    // Se a conexão for bem-sucedida
+    return { status: true, mensagem: "Conexão estabelecida com sucesso!" };
+
+  } catch (error) {
+    // Se ocorrer algum erro no processo de conexão
+    return { status: false, mensagem: `Erro ao tentar conectar: ${error.message}` };
   }
-  return serialService.conectarPorta(porta, 9600);
 });
-ipcMain.handle("desconectar-porta", () => serialService.desconectarPorta());
+
+
+ipcMain.handle("desconectar-porta", async () => {
+  try {
+    const resultado = await serialService.desconectarPorta();
+    if (resultado) {
+      return { status: true, mensagem: "Desconexão bem-sucedida!" };
+    } else {
+      const mensagemErro = "Falha ao desconectar da porta serial.";
+      return { status: false, mensagem: mensagemErro };
+    }
+  } catch (error) {
+    // Caso ocorra algum erro no processo de desconexão
+    return { status: false, mensagem: `Erro ao tentar desconectar: ${error.message}` };
+  }
+});
+
+
 ipcMain.handle("enviar-comando-serial", (event, comando) =>
   serialService.enviarComandoSerial(comando)
 );
@@ -288,7 +320,6 @@ ipcMain.handle("open-external", async (event, url) => {
       await shell.openExternal(url);
       return { ok: true };
     } catch (err) {
-      console.error("Erro ao abrir o link:", err);
       return { ok: false, reason: err.message };
     }
   } else {

@@ -426,55 +426,38 @@ async function listarPortas() {
 }
 window.listarPortas = listarPortas;
 
+// Função para alternar a conexão
 let conectado = false;
+async function toggleConexao() {
+  const portaSelecionada = document.getElementById("selectPorta").value;
+  const baudrateSelecionado = parseInt(document.getElementById("selectBaudrate").value); // Converte para número
 
-async function conectarPorta() {
-  const porta = document.getElementById("selectPorta").value;
-  if (!porta) {
-    log("Selecione uma porta antes de conectar.", "erro");
-    return;
-  }
-  try {
-    const resultado = await window.electronAPI.conectarPorta(porta);
-    if (resultado.status) {
-      conectado = true;
-      document.getElementById("btnConectar").textContent = "Desconectar";
-      document.getElementById("btnConectar").classList.remove("btn-warning");
-      document.getElementById("btnConectar").classList.add("btn-danger");
-      log(resultado.mensagem, "sistema");
-    } else {
-      log(resultado.mensagem, "erro");
-    }
-  } catch (err) {
-    log("Erro ao conectar: " + err.message, "erro");
-  }
-}
+  if (conectado) {
+    // Desconectar
+    const resposta = await window.electronAPI.desconectarPorta();
+    if (resposta.status) {
+      alert(resposta.mensagem); // Exibe mensagem de sucesso
 
-async function desconectarPorta() {
-  try {
-    const resultado = await window.electronAPI.desconectarPorta();
-    if (resultado.status) {
       conectado = false;
       document.getElementById("btnConectar").textContent = "Conectar";
       document.getElementById("btnConectar").classList.remove("btn-danger");
       document.getElementById("btnConectar").classList.add("btn-warning");
-      log(resultado.mensagem, "sistema");
     } else {
-      log(resultado.mensagem, "erro");
+      alert(`Erro ao desconectar: ${resposta.mensagem}`);
     }
-  } catch (err) {
-    log("Erro ao desconectar: " + err.message, "erro");
-  }
-}
-
-// Função para alternar a conexão
-function toggleConexao() {
-  if (conectado) {
-    window.electronAPI.desconectarPorta();
   } else {
-    window.electronAPI.conectarPorta(
-      document.getElementById("selectPorta").value
-    );
+    // Conectar
+    const resposta = await window.electronAPI.conectarPorta(portaSelecionada, baudrateSelecionado);
+    if (resposta.status) {
+      alert(resposta.mensagem); // Exibe mensagem de sucesso
+
+      conectado = true;
+      document.getElementById("btnConectar").textContent = "Desconectar";
+      document.getElementById("btnConectar").classList.remove("btn-warning");
+      document.getElementById("btnConectar").classList.add("btn-danger");
+    } else {
+      alert(`Erro ao conectar: ${resposta.mensagem}`);
+    }
   }
 }
 window.toggleConexao = toggleConexao;
@@ -589,9 +572,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   document
     .getElementById("btnListarPortas")
     .addEventListener("click", listarPortas);
-
-  // Select baudrate
-  // document.getElementById("selectBaudrate").addEventListener("change", (e) => atualizarBaudrate(e.target.value));
 
   // Adiciona o evento de clique no botão executar código
   const btnExecutarCodigo = document.getElementById("btnExecutarCodigo");
