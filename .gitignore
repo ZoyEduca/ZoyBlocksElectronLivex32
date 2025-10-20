@@ -152,7 +152,6 @@ dist/
 **/zoyblocks_sketch/
 **/zoyblocks_build/
 /arduino_cli_dist/data/packages/
-**/blockly
 
 # Pasta do Arduino CLI (cache de cores e logs)
 /.arduino15/
