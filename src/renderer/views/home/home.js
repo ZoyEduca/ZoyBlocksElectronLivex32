@@ -272,19 +272,21 @@ function atualizarCodigoPython() {
 }
 
 function configurarAtualizacaoCodigo() {
-   if (workspace) {
-       workspace.addChangeListener(function (event) {
-           // Verifica se a alteração foi relevante (por exemplo, a adição de blocos)
-           if (event.type === Blockly.Events.BLOCK_CREATE ||
-               event.type === Blockly.Events.BLOCK_CHANGE ||
-               event.type === Blockly.Events.BLOCK_DELETE ||
-               event.type === Blockly.Events.BLOCK_MOVE) {
-               atualizarCodigoPython(); // Atualiza o código quando um bloco for adicionado ou modificado
-           }
-       });
-   } else {
-       console.warn("Workspace ainda não foi inicializado.");
-   }
+  if (workspace) {
+    workspace.addChangeListener(function (event) {
+      // Verifica se a alteração foi relevante (por exemplo, a adição de blocos)
+      if (
+        event.type === Blockly.Events.BLOCK_CREATE ||
+        event.type === Blockly.Events.BLOCK_CHANGE ||
+        event.type === Blockly.Events.BLOCK_DELETE ||
+        event.type === Blockly.Events.BLOCK_MOVE
+      ) {
+        atualizarCodigoPython(); // Atualiza o código quando um bloco for adicionado ou modificado
+      }
+    });
+  } else {
+    console.warn("Workspace ainda não foi inicializado.");
+  }
 }
 
 // ----------------------------------------------------------------------------
@@ -327,7 +329,6 @@ document
 document.getElementById("abrirZoyGPTBtn").addEventListener("click", () => {
   window.electronAPI.abrirZoyGPT();
 });
-
 
 // ----------------------------------------------------------------------------
 // ----------- Esconder/Exibir sidebar (menu lateral) -------------------------
@@ -478,11 +479,89 @@ function toggleConexao() {
 }
 window.toggleConexao = toggleConexao;
 
+async function executarCodigo() {
+  const preElement = document.getElementById("codigoPython");
+  const codigoPython = preElement?.textContent?.trim();
+
+  if (!codigoPython || codigoPython.includes("Nenhum código gerado")) {
+    alert("Nenhum código Python válido foi gerado.");
+    return;
+  }
+
+  // APAGAR POSTERIOMENTE O CONSOLE.LOG
+  console.log("🧠 Código a executar:\n", codigoPython);
+
+
+  // Limpar o terminal antes de começar a execução
+  const terminalElement = document.getElementById("terminal");
+  if (terminalElement) {
+    terminalElement.innerHTML = ''; // Limpa o terminal
+  }
+
+  try {
+    const resultado = await window.electronAPI.executarCodigo(codigoPython);
+
+    if (resultado.status) {
+      console.log("[✅] Execução concluída com sucesso.");
+      exibirLogNoTerminal("Execução concluída com sucesso.");
+    } else {
+      console.error("[❌] Erro na execução:");
+      exibirLogNoTerminal("Erro na execução.");
+    }
+
+    // Exibir logs no console
+    if (Array.isArray(resultado.logs)) {
+      resultado.logs.forEach((log) => console.log(log));
+      exibirLogNoTerminal(log); // Exibe no terminal da interface
+    }
+
+    // Se quiser exibir na UI futuramente:
+    // document.getElementById("terminal").textContent = resultado.logs.join('\n');
+  } catch (err) {
+    console.error("[ERRO] Falha ao executar código:", err);
+    exibirLogNoTerminal(`Erro ao executar código: ${err.message}`);
+  }
+}
+
+// Função para exibir logs no terminal
+function exibirLogNoTerminal(log) {
+  const terminalElement = document.getElementById("terminal");
+  if (!terminalElement) return;
+
+  const hora = new Date().toLocaleTimeString();
+
+  const logDiv = document.createElement("div");
+  logDiv.textContent = `[${hora}] ${log}`;
+  terminalElement.appendChild(logDiv);
+
+  // Rolagem automática para o final do terminal
+  terminalElement.scrollTop = terminalElement.scrollHeight;
+}
+
+// Limpar Terminal
+document.getElementById("limparTerminalBtn")?.addEventListener("click", () => {
+  const terminalElement = document.getElementById("terminal");
+  if (terminalElement) {
+    terminalElement.innerHTML = ''; // Limpa o terminal
+  }
+});
+
+
+async function ajudaLinkOpen(e) {
+  e.preventDefault(); // Previne o comportamento padrão (abrir no próprio window)
+  const url = "https://zoy.com.br";
+  const response = await window.electronAPI.openExternal(url);
+
+  if (!response.ok) {
+    console.error("Falha ao abrir o link:", response.reason);
+  }
+}
+
+
 // Eventos vindos do Electron
 window.electronAPI.onStatusSerial((data) => log(data.mensagem, "sistema"));
 window.electronAPI.onDadosSerial((data) => log(data, "normal"));
 window.electronAPI.onErroSerial((data) => log(data.mensagem, "erro"));
-
 
 // ----------------------------------------------------------
 // --- EVENTOS PRINCIPAIS(DOMloading)------------------------
@@ -503,15 +582,14 @@ window.addEventListener("DOMContentLoaded", async () => {
   const selectPlaca = document.getElementById("selectPlaca");
   await atualizarWorkspace(selectPlaca);
 
-   // Expandir área do código Python
+  // Expandir área do código Python
   const pre = document.getElementById("codigoPython");
   pre.addEventListener("click", function () {
     const preElement = document.getElementById("codigoPython");
     preElement.classList.toggle("expanded");
   });
 
-
-   // Botão listar portas
+  // Botão listar portas
   listarPortas();
   document
     .getElementById("btnConectar")
@@ -528,38 +606,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (btnExecutarCodigo) {
     btnExecutarCodigo.addEventListener("click", executarCodigo);
   }
+
+  // Adiciona o evento de clique no link
+  const ajudaLink = document.getElementById("ajuda-link"); // Seu botão de ajuda
+  if (ajudaLink) {
+    ajudaLink.addEventListener("click", ajudaLinkOpen);
+  }
 });
-
-
-async function executarCodigo() {
-  const preElement = document.getElementById("codigoPython");
-  const codigoPython = preElement?.textContent?.trim();
-
-  if (!codigoPython || codigoPython.includes("Nenhum código gerado")) {
-    alert("Nenhum código Python válido foi gerado.");
-    return;
-  }
-
-  console.log("🧠 Código a executar:\n", codigoPython);
-
-  try {
-    const resultado = await window.electronAPI.executarCodigo(codigoPython);
-
-    if (resultado.status) {
-      console.log("[✅] Execução concluída com sucesso.");
-    } else {
-      console.error("[❌] Erro na execução:");
-    }
-
-    // Exibir logs no console
-    if (Array.isArray(resultado.logs)) {
-      resultado.logs.forEach(log => console.log(log));
-    }
-
-    // Se quiser exibir na UI futuramente:
-    // document.getElementById("terminal").textContent = resultado.logs.join('\n');
-
-  } catch (err) {
-    console.error("[ERRO] Falha ao executar código:", err);
-  }
-}

@@ -12,6 +12,8 @@
   transition: flex-basis 0.3s ease-in-out;
 }
 
+
+
 /* ----------------- NavBar ------------------------ */
 .custom-navbar {
   background: linear-gradient(90deg, #2b1cd1 0%, #3d2fd9 100%);
@@ -248,7 +250,10 @@
   filter: invert(1);
 }
 
-/* Código Python */
+
+
+
+/* ------------- Código Python ---------------------------- */
 #codigoPython {
   background: white;
   padding: 10px;
@@ -284,6 +289,23 @@
 #codigoPython.expanded::after {
   content: "▲"; /* seta para cima */
 }
+
+
+/* ------------- Terminal de Comunicação ------------------------ */
+#terminal {
+    height: 150px;
+    overflow-y: auto;
+    background: #000;
+    color: #0f0;
+    padding: 5px;
+    font-family: monospace;
+    font-size: 12px;
+    border: 1px solid #ccc;
+  }
+
+
+
+
 
 /* ----------------- Responsividade ----------------------------  */
 @media (max-width: 768px) {

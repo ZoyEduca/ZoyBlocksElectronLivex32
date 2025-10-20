@@ -86,6 +86,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
    // Adiciona a função goBack, que envia uma mensagem IPC para o Main
    // Usamos 'navigate-to-view' com o nome da view de destino
-   goBack: () => { ipcRenderer.send('navigate-to-view', 'home'); 
-}
+   goBack: () => { ipcRenderer.send('navigate-to-view', 'home')},
+
+  // Expor a API segura para abrir URLs externas
+  // Adicionando a função openExternal no contexto
+  openExternal: (url) => ipcRenderer.invoke("open-external", url),
+
 });
