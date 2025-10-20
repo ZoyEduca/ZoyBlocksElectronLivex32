@@ -90,7 +90,7 @@ async function executarCodigo(codigoPython) {
             }
 
             if (comandoSerial) {
-                logs.push(`[INFO] Traduzido para: ${comandoSerial}`);
+                logs.push(`[INFO] ${funcao} -> Traduzido para: ${comandoSerial}`);
                 comandosEnviados.push(serialService.enviarComandoSerial(comandoSerial));
             } else {
                 logs.push(`[AVISO] Comando serial não gerado para: ${funcao}`);

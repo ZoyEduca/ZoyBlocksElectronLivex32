@@ -488,10 +488,6 @@ async function executarCodigo() {
     return;
   }
 
-  // APAGAR POSTERIOMENTE O CONSOLE.LOG
-  console.log("🧠 Código a executar:\n", codigoPython);
-
-
   // Limpar o terminal antes de começar a execução
   const terminalElement = document.getElementById("terminal");
   if (terminalElement) {
@@ -501,29 +497,24 @@ async function executarCodigo() {
   try {
     const resultado = await window.electronAPI.executarCodigo(codigoPython);
 
-    if (resultado.status) {
-      console.log("[✅] Execução concluída com sucesso.");
-      exibirLogNoTerminal("Execução concluída com sucesso.");
-    } else {
-      console.error("[❌] Erro na execução:");
-      exibirLogNoTerminal("Erro na execução.");
+    if (!resultado.status) {
+      exibirLogNoTerminal("[ERRO] Ocorreu um erro ao executar o comando. Por favor, reinicie a aplicação. Caso o problema persista, entre em contato com a equipe de desenvolvimento.");
     }
 
-    // Exibir logs no console
+    // Exibir logs no console e no terminal
     if (Array.isArray(resultado.logs)) {
-      resultado.logs.forEach((log) => console.log(log));
-      exibirLogNoTerminal(log); // Exibe no terminal da interface
+      resultado.logs.forEach((log) => {
+        // Exibe no terminal da interface
+        exibirLogNoTerminal(log);
+      });
     }
 
-    // Se quiser exibir na UI futuramente:
-    // document.getElementById("terminal").textContent = resultado.logs.join('\n');
   } catch (err) {
-    console.error("[ERRO] Falha ao executar código:", err);
-    exibirLogNoTerminal(`Erro ao executar código: ${err.message}`);
+    exibirLogNoTerminal(`[ERRO] Falha ao executar código: ${err.message}`);
   }
 }
 
-// Função para exibir logs no terminal
+// Função para exibir logs no terminal com hora
 function exibirLogNoTerminal(log) {
   const terminalElement = document.getElementById("terminal");
   if (!terminalElement) return;
@@ -531,7 +522,7 @@ function exibirLogNoTerminal(log) {
   const hora = new Date().toLocaleTimeString();
 
   const logDiv = document.createElement("div");
-  logDiv.textContent = `[${hora}] ${log}`;
+  logDiv.textContent = `[${hora}] ${log}`; // Inclui hora
   terminalElement.appendChild(logDiv);
 
   // Rolagem automática para o final do terminal
@@ -557,11 +548,12 @@ async function ajudaLinkOpen(e) {
   }
 }
 
-
 // Eventos vindos do Electron
 window.electronAPI.onStatusSerial((data) => log(data.mensagem, "sistema"));
 window.electronAPI.onDadosSerial((data) => log(data, "normal"));
 window.electronAPI.onErroSerial((data) => log(data.mensagem, "erro"));
+
+
 
 // ----------------------------------------------------------
 // --- EVENTOS PRINCIPAIS(DOMloading)------------------------
