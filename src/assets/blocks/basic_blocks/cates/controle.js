@@ -3,35 +3,34 @@
   const COR_BLOCOS = 210;
 
   const controle = () => {
-    // Verifica se o bloco já foi definido
-    if (!Blockly.Blocks["aguarde_segundos"]) {
-      Blockly.defineBlocksWithJsonArray([
-        {
-          type: "aguarde_segundos",
-          message0: "aguarde %1 segundos",
-          args0: [
-            {
-              type: "field_number",
-              name: "TEMPO",
-              value: 1,
-              min: 0,
-              precision: 0.1,
-            },
-          ],
-          previousStatement: null,
-          nextStatement: null,
-          colour: COR_BLOCOS,
-          tooltip: "Pausa a execução por N segundos",
-          helpUrl: "",
-        },
-      ]);
+    Blockly.defineBlocksWithJsonArray([
+      {
+        type: "aguarde_segundos",
+        message0: "aguarde %1 segundos",
+        args0: [
+          {
+            type: "field_number",
+            name: "TEMPO",
+            value: 1,
+            min: 0,
+            precision: 0.1,
+          },
+        ],
+        previousStatement: null,
+        nextStatement: null,
+        colour: COR_BLOCOS,
+        tooltip: "Pausa a execução por N segundos",
+        helpUrl: "",
+      },
+    ]);
 
-      Blockly.Python["aguarde_segundos"] = (block) =>{
-        return `time.sleep("AGUARDA", "${block.getFieldValue("TEMPO")}")\n`;
-      }
+    // Geração de código Python
+    Blockly.Python["aguarde_segundos"] = (block) =>{
+      const tempo = block.getFieldValue("TEMPO");
+      return `time_sleep("AGUARDA", "${tempo}")\n`;
     }
 
-    // Redefinição de blocos com nova cor
+    // Redefinição de blocos nativos com nova cor
     Blockly.Blocks["controls_repeat_ext_custom"] = Object.assign(
       {},
       Blockly.Blocks["controls_repeat_ext"]
@@ -67,7 +66,7 @@
     Blockly.Python["controls_for_custom"] = function (block) {
       return Blockly.Python["controls_for"](block);
     };
-  };
+};
 
   const categoriaControle = {
     kind: "category",

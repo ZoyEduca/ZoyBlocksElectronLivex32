@@ -85,7 +85,7 @@ async function executarCodigo(codigoPython) {
                 case 'iniciar_zoy':
                     comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
-                case 'time.sleep':
+                case 'time_sleep':
                     comandoSerial = `<${comando}:${argumentos_comando}>`;
                     break;
                 default:
