@@ -113,7 +113,7 @@ async function enviarComandoSerial(comando) {
                     if (drainErr) {
                         return reject(drainErr);
                     }
-                    console.log(`[INFO] Comando enviado e buffer esvaziado: ${comando}`);
+                    console.log(`[INFO] Comando enviado: ${comando}`);
                     resolve();
                 });
             });
