@@ -363,9 +363,53 @@ void processarComando(String cmd)
   // === NOVO: DIGITAL_WRITE (pinos digitais) ===
   if (comando_temp == "DIGITAL_WRITE")
   {
-    // ... (lógica inalterada)
-    Serial.println("OK");
-    return;
+    int sep_arg = argumentos_temp.indexOf(',');
+    if (sep_arg == -1)
+    {
+      Serial.println("ERRO:ARG_INVALIDO_DIGITAL_WRITE");
+      return;
+    }
+    String pinoStr = argumentos_temp.substring(0, sep_arg);
+    String nivelStr = argumentos_temp.substring(sep_arg + 1);
+
+    pinoStr.trim();
+    nivelStr.trim();
+
+    // Converte o pino para int (ex: "D3" -> 3; "13" -> 13)
+    int pino = -1;
+    if (pinoStr.startsWith("D"))
+    {
+      pino = pinoStr.substring(1).toInt();
+    }
+    else
+    {
+      pino = pinoStr.toInt();
+    }
+
+    int nivel = -1; // HIGH=1, LOW=0
+    if (nivelStr == "HIGH")
+    {
+      nivel = HIGH;
+    }
+    else if (nivelStr == "LOW")
+    {
+      nivel = LOW;
+    }
+
+    // Verifica se o pino e o nível são válidos
+    // (Para pinos digitais, números inteiros geralmente entre 0 e 13 para Arduino UNO/Nano)
+    if (pino != -1 && (nivel == HIGH || nivel == LOW))
+    {
+      pinMode(pino, OUTPUT); // Garante que o pino está configurado como OUTPUT
+      digitalWrite(pino, nivel);
+      Serial.println("OK");
+      return;
+    }
+    else
+    {
+      Serial.println("ERRO:PARAMETROS_DIGITAL_WRITE_INVALIDOS");
+      return;
+    }
   }
 
   // === NOVO: PWM_WRITE (pinos PWM) ===
