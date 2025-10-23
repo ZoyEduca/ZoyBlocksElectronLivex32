@@ -57,11 +57,22 @@ const assetsToLoad = {
       type: "js",
       path: `${window.paths.blocks_device.basic_blocks}cates/logica.js`,
     },
-    // NOVO: Adicionando a categoria Matemática
     {
       name: "matematica_basicBlocks",
       type: "js",
       path: `${window.paths.blocks_device.basic_blocks}cates/matematica.js`,
+    },
+    // NOVO: Adicionando a categoria Funções
+    {
+      name: "funcao_basicBlocks",
+      type: "js",
+      path: `${window.paths.blocks_device.basic_blocks}cates/funcao.js`,
+    },
+    // NOVO: Adicionando a categoria Serial
+    {
+      name: "serial_basicBlocks",
+      type: "js",
+      path: `${window.paths.blocks_device.basic_blocks}cates/serial.js`,
     },
     // blocos do zoySteamBlocks
     {

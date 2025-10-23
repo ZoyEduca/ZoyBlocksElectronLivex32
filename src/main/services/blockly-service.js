@@ -46,6 +46,22 @@ async function executarCodigo(codigoJavaScript) {
         mover_tras: async (comando, argsString) => blocklyFunctions.enviarComando('mover_tras', comando, argsString),
         parar_motor: async (comando, argsString) => blocklyFunctions.enviarComando('parar_motor', comando, argsString),
         iniciar_zoy: async (comando, argsString) => blocklyFunctions.enviarComando('iniciar_zoy', comando, argsString),
+        // === Funções para Bloco Serial (NOVO) ===
+        serial_println_cmd: async (msg) => {
+            // Remove aspas da string para o comando serial, se houver
+            const args = String(msg).replace(/^['"]|['"]$/g, '');
+            // NOTA: O firmware do Arduino deve reconhecer o comando 'SERIAL_PRINT'
+            return blocklyFunctions.enviarComando('serial_println', 'SERIAL_PRINT', args);
+        },
+
+        serial_read_cmd: async () => {
+            // NOTA: O bloco 'serial_read' é complexo. 
+            // Por enquanto, apenas enviamos a requisição e retornamos um valor padrão '0'.
+            await blocklyFunctions.enviarComando('serial_read', 'SERIAL_READ_REQ', '');
+            return '0'; // Retorna 0 para evitar que o código JavaScript quebre
+        },
+    
+    
     };
 
     try {
