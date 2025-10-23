@@ -120,9 +120,9 @@ const assetsToLoad = {
       path: `${window.paths.blocks_device.zoy_steam_blocks}cates/botao.js`,
     },
     {
-      name: "pinoLivres_zoySteamBlocks",
+      name: "pinosLivres_zoySteamBlocks",
       type: "js",
-      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/pinoLivres.js`,
+      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/pinosLivres.js`,
     },
     {
       name: "som_zoySteamBlocks",
