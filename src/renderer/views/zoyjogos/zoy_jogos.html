@@ -500,7 +500,8 @@
             if (!window.Blockly || !window.workspaceMaze) return;
 
             // Gera o código em JavaScript (usando o Python Generator para simular a execução)
-            const code = Blockly.Python.workspaceToCode(window.workspaceMaze);
+            //const code = Blockly.Python.workspaceToCode(window.workspaceMaze);
+            const code = window.jsGenerator.workspaceToCode(window.workspaceMaze);
             
             // Envolve o código em uma função JS assíncrona para execução segura
             const finalCode = `(async function() {\n${code}})();`;
