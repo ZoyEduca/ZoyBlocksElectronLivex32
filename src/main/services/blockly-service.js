@@ -1,10 +1,40 @@
 // blockly-service.js
 
 const serialService = require("./serial-services"); // Importa o serviço serial
+const vm = require("node:vm"); // ✅ Sandbox seguro do Node.js
+
+// --- Função para prevenir loops infinitos ---
+function protegerLoops(codigo) {
+  const loopCounterVar = "__loopCounter";
+  const limitVar = "__loopLimit";
+
+  const header = `
+    let ${loopCounterVar} = 0;
+    const ${limitVar} = 5;
+    function __checkLoop() {
+      if (++${loopCounterVar} > ${limitVar}) {
+        throw new Error("⚠️ Execução interrompida — limite máximo(5) de repetições atingido");
+      }
+    }
+  `;
+
+  // Versão corrigida das substituições
+  const protegido = codigo
+    // Adiciona a checagem dentro dos blocos de repetição, sem quebrar a sintaxe
+    .replace(/while\s*\((.*?)\)\s*\{/g, "while($1){ __checkLoop();")
+    .replace(/for\s*\((.*?)\)\s*\{/g, "for($1){ __checkLoop();")
+    .replace(/do\s*\{/g, "do { __checkLoop(); ");
+
+  return header + "\n" + protegido;
+}
+
 
 async function executarCodigo(codigoJavaScript) {
   const logs = [];
   logs.push(`[INFO] Código JavaScript recebido:\n${codigoJavaScript}`);
+
+  // Protege o código antes de rodar
+  const codigoProtegido = protegerLoops(codigoJavaScript);
 
   // === Mapeamento das Funções do Blockly para a Ação Serial ===
   const blocklyFunctions = {
@@ -14,9 +44,7 @@ async function executarCodigo(codigoJavaScript) {
       logs.push(`[INFO] [${funcao}] Traduzido para: ${comandoSerial}`);
 
       // Chama o serialService.enviarComandoSerial (adicionarComandoNaFila)
-      const resultadoEnvio = await serialService.enviarComandoSerial(
-        comandoSerial
-      );
+      const resultadoEnvio = await serialService.enviarComandoSerial( comandoSerial);
 
       if (!resultadoEnvio.status) {
         const erro = `Falha ao adicionar à fila: ${resultadoEnvio.mensagem}`;
@@ -112,22 +140,20 @@ async function executarCodigo(codigoJavaScript) {
   };
 
   try {
-    // Envolve o código do usuário em uma função assíncrona auto-executável (IIFE).
-    const wrappedCode = `(async () => { ${codigoJavaScript} })()`;
+    // Cria um sandbox isolado e seguro
+    const contexto = vm.createContext({
+      ...blocklyFunctions,
+      logs,
+      console,
+      setTimeout,
+      clearTimeout,
+    });
 
-    // Cria a função de execução para injetar as variáveis (funções do robô e logs).
-    const runInContext = new Function(
-      ...Object.keys(blocklyFunctions), // Nomes das funções (e.g., 'pausa', 'mover_frente')
-      "logs",
-      wrappedCode // Passa a função async auto-executável
-    );
-
-    // O 'await' está aqui, dentro da função 'async executarCodigo', o que é o lugar correto.
-    await runInContext(...Object.values(blocklyFunctions), logs);
+    // Compila e executa o script dentro do sandbox com limite de tempo
+    const script = new vm.Script(`(async () => { ${codigoProtegido} })()`);
+    await script.runInContext(contexto, { timeout: 2000 }); // 2s por execução
   } catch (err) {
-    logs.push(
-      `[ERRO FATAL] Erro durante a execução do código JavaScript: ${err.message}`
-    );
+    logs.push(`[ERRO FATAL] Erro durante a execução: ${err.message}`);
     return {
       status: false,
       mensagem: `Erro de execução: ${err.message}`,
@@ -135,9 +161,7 @@ async function executarCodigo(codigoJavaScript) {
     };
   }
 
-  logs.push(
-    `[SUCESSO] Todos os comandos do script JavaScript (incluindo laços de repetição) foram adicionados à fila de execução serial com sucesso.`
-  );
+  logs.push(`[SUCESSO] Execução concluída com sucesso.`);
   return { status: true, mensagem: "Execução (Adição à fila) concluída", logs };
 }
 

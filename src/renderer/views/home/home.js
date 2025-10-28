@@ -440,7 +440,7 @@ async function toggleConexao() {
   if (conectado) {
     // Desconectar
     const resposta = await window.electronAPI.desconectarPorta();
-    if (resposta.status) {
+  if (resposta.status) {
       alert(resposta.mensagem); // Exibe mensagem de sucesso
 
       conectado = false;
@@ -460,10 +460,10 @@ async function toggleConexao() {
       document.getElementById("btnConectar").textContent = "Desconectar";
       document.getElementById("btnConectar").classList.remove("btn-warning");
       document.getElementById("btnConectar").classList.add("btn-danger");
-    } else {
-      alert(`Erro ao conectar: ${resposta.mensagem}`);
-    }
+  } else {
+    alert(`Erro ao conectar: ${resposta.mensagem}`);
   }
+}
 }
 window.toggleConexao = toggleConexao;
 
@@ -486,8 +486,9 @@ async function executarCodigo() {
     const resultado = await window.electronAPI.executarCodigo(areaCodigo);
 
     if (!resultado.status) {
-      exibirLogNoTerminal("[ERRO] Ocorreu um erro ao executar o comando. Por favor, reinicie a aplicação. Caso o problema persista, entre em contato com a equipe de desenvolvimento.");
+      exibirLogNoTerminal(`[ERRO] ${resultado.mensagem || "Falha desconhecida"}`);
     }
+
 
     // Exibir logs no console e no terminal
     if (Array.isArray(resultado.logs)) {
