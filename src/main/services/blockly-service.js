@@ -153,7 +153,7 @@ async function executarCodigo(codigoJavaScript) {
     const script = new vm.Script(`(async () => { ${codigoProtegido} })()`);
     await script.runInContext(contexto, { timeout: 2000 }); // 2s por execução
   } catch (err) {
-    logs.push(`[ERRO FATAL] Erro durante a execução: ${err.message}`);
+    logs.push(`[Interrupção] Erro durante a execução: ${err.message}`);
     return {
       status: false,
       mensagem: `Erro de execução: ${err.message}`,

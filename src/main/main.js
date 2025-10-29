@@ -273,7 +273,7 @@ ipcMain.handle("executar-codigo", async (event, comando) => {
     const resultado = await blocklyService.executarCodigo(comando);
     return resultado;
   } catch (err) {
-    console.error("[ERRO FATAL] Erro na execução de código:", err);
+    console.error("[ERRO] Erro na execução de código:", err);
     return {
       status: false,
       mensagem: `Erro interno no main process: ${err.message}`,
