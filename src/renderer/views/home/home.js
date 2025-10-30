@@ -427,6 +427,10 @@ document.getElementById("carregarProjeto")?.addEventListener("click", (e) => {
 // Função de log simples
 function log(mensagem, tipo = "normal") {
   console.log(`[${tipo}] ${mensagem}`);
+
+  // **ALTERAÇÃO APLICADA AQUI:** // Encaminha a mensagem para o terminal visual, garantindo que as respostas do Arduino apareçam.
+  // Usamos o tipo para formatar a mensagem no terminal
+  exibirLogNoTerminal(`[${tipo.toUpperCase()}] ${mensagem}`);
 }
 
 // Funções de conexão (não implementadas ainda)
