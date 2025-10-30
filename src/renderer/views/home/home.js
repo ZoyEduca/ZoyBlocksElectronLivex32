@@ -368,33 +368,58 @@ document.getElementById("toggleSidebar").addEventListener("click", function () {
 // ----------------------------------------------------------------------------
 // ----------- NavBar  --------------------------------------------------------
 // ----------------------------------------------------------------------------
-// Funçõe NavBar (não implementadas ainda)
-// function salvarProjeto() {
-//   const xml = Blockly.Xml.workspaceToDom(workspace);
-//   const xmlText = Blockly.Xml.domToPrettyText(xml);
-//   const blob = new Blob([xmlText], { type: "text/xml" });
-//   const url = URL.createObjectURL(blob);
-//   const a = document.createElement("a");
-//   a.href = url;
-//   a.download = "projeto_zoy.xml";
-//   a.click();
-// }
+function salvarProjeto() {
+  const state = Blockly.serialization.workspaces.save(window.workspace);
+  const json = JSON.stringify(state, null, 2);
 
-// function carregarProjeto() {
-//   const input = document.createElement("input");
-//   input.type = "file";
-//   input.accept = ".xml";
-//   input.onchange = (e) => {
-//     const file = e.target.files[0];
-//     const reader = new FileReader();
-//     reader.onload = function (e) {
-//       const xml = Blockly.Xml.textToDom(e.target.result);
-//       Blockly.Xml.domToWorkspace(xml, workspace);
-//     };
-//     reader.readAsText(file);
-//   };
-//   input.click();
-// }
+  const blob = new Blob([json], { type: "application/json" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "projeto.json";
+  link.click();
+
+  alert("💾 Projeto salvo com sucesso!");
+}
+
+async function carregarProjeto() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json";
+
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const state = JSON.parse(event.target.result);
+        window.workspace.clear();
+        Blockly.serialization.workspaces.load(state, window.workspace);
+        atualizarAreaCodigo();
+        alert("📂 Projeto JSON carregado com sucesso!");
+      } catch (error) {
+        alert("❌ Erro ao carregar o projeto JSON. Verifique se o arquivo é válido.");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  input.click();
+}
+
+// Eventos dos botões de salvar e carregar
+document.getElementById("salvarProjeto")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  salvarProjeto();
+});
+
+document.getElementById("carregarProjeto")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  carregarProjeto();
+});
+
+
 
 // ----------------------------------------------------------------------------
 // ----------- Lógica de conexões Serial --------------------------------------
