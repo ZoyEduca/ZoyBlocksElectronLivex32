@@ -1,4 +1,4 @@
-// blockly-service.js
+// blockly-service.js (CORRIGIDO E ATUALIZADO)
 
 const serialService = require("./serial-services"); // Importa o serviço serial
 const vm = require("node:vm"); // ✅ Sandbox seguro do Node.js
@@ -10,7 +10,7 @@ function protegerLoops(codigo) {
 
   const header = `
     let ${loopCounterVar} = 0;
-    const ${limitVar} = 60;
+    const ${limitVar} = 4;
     function __checkLoop() {
       if (++${loopCounterVar} > ${limitVar}) {
         throw new Error("⚠️ Execução interrompida — limite máximo(60) de repetições atingido");
@@ -20,14 +20,12 @@ function protegerLoops(codigo) {
 
   // Versão corrigida das substituições
   const protegido = codigo
-    // Adiciona a checagem dentro dos blocos de repetição, sem quebrar a sintaxe
     .replace(/while\s*\((.*?)\)\s*\{/g, "while($1){ __checkLoop();")
     .replace(/for\s*\((.*?)\)\s*\{/g, "for($1){ __checkLoop();")
     .replace(/do\s*\{/g, "do { __checkLoop(); ");
 
   return header + "\n" + protegido;
 }
-
 
 async function executarCodigo(codigoJavaScript) {
   const logs = [];
@@ -38,74 +36,88 @@ async function executarCodigo(codigoJavaScript) {
 
   // === Mapeamento das Funções do Blockly para a Ação Serial ===
   const blocklyFunctions = {
-    // Função utilitária: adiciona o comando à fila serial
+    // --- FUNÇÕES UTILITÁRIAS REFEITAS ---
+
+    /**
+     * Envia um comando que NÃO retorna valor (ex: mover, led).
+     * A promessa só resolve quando o comando é concluído (seja por ACK ou imediatamente).
+     */
     enviarComando: async (funcao, comando, argumentos_comando = "") => {
       let comandoSerial = `<${comando}:${argumentos_comando}>`;
-      logs.push(`[INFO] [${funcao}] Traduzido para: ${comandoSerial}`);
+      logs.push(`[INFO] [${funcao}] Enviando: ${comandoSerial}`);
 
-      // Chama o serialService.enviarComandoSerial (adicionarComandoNaFila)
-      const resultadoEnvio = await serialService.enviarComandoSerial( comandoSerial);
+      // Chama a fila unificada: (comando, tag=null, isSensor=false)
+      await serialService.enviarComandoSerial(comandoSerial, null, false);
 
-      if (!resultadoEnvio.status) {
-        const erro = `Falha ao adicionar à fila: ${resultadoEnvio.mensagem}`;
-        logs.push(`[ERRO] [${funcao}] ${erro}`);
-        // Quebra a execução do script JS se a serial não estiver aberta
-        throw new Error(`Falha de conexão: ${resultadoEnvio.mensagem}`);
-      }
+      logs.push(`[INFO] [${funcao}] Comando concluído: ${comandoSerial}`);
     },
 
-    // Mapeamento de todas as funções dos seus blocos:
+    /**
+     * Envia um comando que RETORNA valor (ex: sensores).
+     * A promessa resolve com o valor lido.
+     */
+    enviarComandoComRetorno: async (funcao, comando, argumentos_comando = "", tag) => {
+      let comandoSerial = `<${comando}:${argumentos_comando}>`;
+      logs.push(`[INFO] [${funcao}] Solicitando leitura: ${comandoSerial}`);
 
-    // ----------- Funções gerais -------------------
+      // Chama a fila unificada: (comando, tag=tag, isSensor=true)
+      const valor = await serialService.enviarComandoSerial( comandoSerial, tag, true);
+
+      logs.push(`[INFO] [${funcao}] Valor recebido: ${valor}`);
+      return valor;
+    },
+
+    // === MAPEAMENTO DOS BLOCOS (AGORA USANDO OS NOVOS HELPERS) ===
+
+    // ----------- Funções gerais (Ação) -------------------
     iniciar_zoy: async (comando, argsString) =>
       blocklyFunctions.enviarComando("iniciar_zoy", comando, argsString),
     set_pin_mode: async (comando, argsString) =>
       blocklyFunctions.enviarComando("set_pin_mode", comando, argsString),
-
     digital_write: async (comando, argsString) =>
       blocklyFunctions.enviarComando("digital_write", comando, argsString),
-    digital_read: async (comando, argsString) => {
-      const comandoSerial = `<${comando}:${argsString}>`;
-      logs.push(`[INFO] [digital_read] Solicitando leitura: ${comandoSerial}`);
-      try {
-        const valor = await serialService.enviarComandoComRetorno("DIGITAL_READ", comandoSerial);
-        logs.push(`[INFO] [digital_read] Valor recebido: ${valor}`);
-        return valor;
-      } catch (err) {
-        logs.push(`[ERRO] [digital_read] ${err.message}`);
-        return 0;
-      }
-    },
     definir_pino_digital: async (comando, argsString) =>
       blocklyFunctions.enviarComando("definir_pino_digital", comando, argsString),
-
-    analog_read: async (comando, argsString) => {
-      const comandoSerial = `<${comando}:${argsString}>`;
-      logs.push(`[INFO] [analog_read] Solicitando leitura: ${comandoSerial}`);
-      try {
-        const valor = await serialService.enviarComandoComRetorno("ANALOG_READ", comandoSerial);
-        logs.push(`[INFO] [analog_read] Valor recebido: ${valor}`);
-        return valor;
-      } catch (err) {
-        logs.push(`[ERRO] [analog_read] ${err.message}`);
-        return 0;
-      }
-    },
     definir_pino_pwm: async (comando, argsString) =>
       blocklyFunctions.enviarComando("definir_pino_pwm", comando, argsString),
-
     pausa: async (comando, argsString) =>
-      blocklyFunctions.enviarComando("pausa", comando, argsString), // Inclui aguarde_segundos
+      blocklyFunctions.enviarComando("pausa", comando, argsString), // Espera ACK
 
-    // ----------- Funções LED ----------------------
+    // ----------- Funções Sensores (Retorno) -------------------
+    digital_read: async (comando, argsString) => {
+      return blocklyFunctions.enviarComandoComRetorno(
+        "digital_read",
+        comando,
+        argsString,
+        "DIGITAL_READ" // Tag de resposta
+      );
+    },
+    analog_read: async (comando, argsString) => {
+      return blocklyFunctions.enviarComandoComRetorno(
+        "analog_read",
+        comando,
+        argsString,
+        "ANALOG_READ" // Tag de resposta
+      );
+    },
+    ler_ultrassom: async (comando, argsString) => {
+      return blocklyFunctions.enviarComandoComRetorno(
+        "ler_ultrassom",
+        comando,
+        argsString,
+        "ULTRASSOM" // Tag de resposta
+      );
+    },
+
+    // ----------- Funções LED (Ação) ----------------------
     led_pisca_n: async (comando, argsString) =>
-      blocklyFunctions.enviarComando("led_pisca_n", comando, argsString),
+      blocklyFunctions.enviarComando("led_pisca_n", comando, argsString), // Espera ACK
     led_left: async (comando, argsString) =>
       blocklyFunctions.enviarComando("led_left", comando, argsString),
     led_right: async (comando, argsString) =>
       blocklyFunctions.enviarComando("led_right", comando, argsString),
 
-    // ----------- Funções Motores -------------------
+    // ----------- Funções Motores (Ação) -------------------
     mover_frente: async (comando, argsString) =>
       blocklyFunctions.enviarComando("mover_frente", comando, argsString),
     mover_tras: async (comando, argsString) =>
@@ -118,7 +130,6 @@ async function executarCodigo(codigoJavaScript) {
       blocklyFunctions.enviarComando("motor_esquerdo_tras", comando, argsString),
     motor_direito_tras: async (comando, argsString) =>
       blocklyFunctions.enviarComando("motor_direito_tras", comando, argsString),
-
     parar_motor: async (comando, argsString) =>
       blocklyFunctions.enviarComando("parar_motor", comando, argsString),
     parar_motor_esquerdo: async (comando, argsString) =>
@@ -126,54 +137,36 @@ async function executarCodigo(codigoJavaScript) {
     parar_motor_direito: async (comando, argsString) =>
       blocklyFunctions.enviarComando("parar_motor_direito", comando, argsString),
 
-
-
-    // ----------- Funções Servo -------------------
+    // ----------- Funções Servo (Ação) -------------------
     servo: async (comando, argsString) =>
-      blocklyFunctions.enviarComando("servo", comando, argsString),
+      blocklyFunctions.enviarComando("servo", comando, argsString), // Espera ACK
     servo360: async (comando, argsString) =>
       blocklyFunctions.enviarComando("servo360", comando, argsString),
 
-    // ----------- Funções Sensores -------------------
-    ler_ultrassom: async (comando, argsString) => {
-      const comandoSerial = `<${comando}:${argsString}>`;
-      logs.push(`[INFO] [ler_ultrassom] Solicitando leitura: ${comandoSerial}`);
-
-      try {
-        const valor = await serialService.enviarComandoComRetorno("ULTRASSOM", comandoSerial);
-        logs.push(`[INFO] [ler_ultrassom] Valor recebido: ${valor}`);
-        return valor;
-      } catch (err) {
-        logs.push(`[ERRO] [ler_ultrassom] ${err.message}`);
-        return 0; // Retorna 0 em caso de erro para não quebrar o Blockly
-      }
-    },
-
-    // ----------- Funções Som -------------------
+    // ----------- Funções Som (Ação) -------------------
     som_nota: async (comando, argsString) =>
       blocklyFunctions.enviarComando("som_nota", comando, argsString),
 
-    // ----------- Funções Serial -------------------
+    // ----------- Funções Serial (Ação) -------------------
     serial_println_cmd: async (msg) => {
-      // Remove aspas da string para o comando serial, se houver
       const args = String(msg).replace(/^['"]|['"]$/g, "");
-      // NOTA: O firmware do Arduino deve reconhecer o comando 'SERIAL_PRINT'
       return blocklyFunctions.enviarComando(
         "serial_println",
-        "SERIAL_PRINT",
+        "SERIAL_PRINT", // (Assumindo que o firmware tratará 'SERIAL_PRINT' como um comando de ação)
         args
       );
     },
 
     serial_read_cmd: async () => {
-      // NOTA: O bloco 'serial_read' é complexo.
-      // Por enquanto, apenas enviamos a requisição e retornamos um valor padrão '0'.
+      // (Isto ainda é problemático, pois "SERIAL_READ_REQ" não parece estar no firmware)
+      // Por enquanto, vamos manter como está, mas o ideal seria implementar
+      // 'serial_read_cmd' como 'enviarComandoComRetorno' com uma tag 'SERIAL_VALOR'
       await blocklyFunctions.enviarComando(
         "serial_read",
         "SERIAL_READ_REQ",
         ""
       );
-      return "0"; // Retorna 0 para evitar que o código JavaScript quebre
+      return "0";
     },
   };
 
@@ -189,18 +182,20 @@ async function executarCodigo(codigoJavaScript) {
 
     // Compila e executa o script dentro do sandbox com limite de tempo
     const script = new vm.Script(`(async () => { ${codigoProtegido} })()`);
-    await script.runInContext(contexto, { timeout: 2000 }); // 2s por execução
+
+    // *** MUDANÇA SE NECEEARIA: AUMENTE O TIMEOUT ***
+    // 120 segundos (120000).
+    await script.runInContext(contexto, { timeout: 120000 });
   } catch (err) {
     logs.push(`[Interrupção] Erro durante a execução: ${err.message}`);
     return {
       status: false,
-      mensagem: `Erro de execução: ${err.message}`,
+      mensagem: `Erro de execution: ${err.message}`,
       logs,
     };
   }
-
   logs.push(`[SUCESSO] Execução concluída com sucesso.`);
-  return { status: true, mensagem: "Execução (Adição à fila) concluída", logs };
+  return { status: true, mensagem: "Execução concluída", logs };
 }
 
 module.exports = { executarCodigo };

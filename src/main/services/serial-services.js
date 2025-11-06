@@ -11,10 +11,6 @@ const commandQueue = [];
 let isWaitingForAck = false; // TRUE se estamos esperando PAUSA_FIM, SERVO_FIM, etc.
 // ========================================================
 
-// ==== PROMESSAS PENDENTES PARA RESPOSTAS DE SENSORES ====
-let pendingResolvers = {}; // Ex: { ULTRASSOM: resolveFn, ANALOG_READ: resolveFn }
-// ========================================================
-
 function enviarStatusSerial(data) {
     const allWindows = BrowserWindow.getAllWindows();
     allWindows.forEach(win => {
@@ -26,6 +22,7 @@ function enviarStatusSerial(data) {
 
 function enviarDadosSerial(dados) {
     const allWindows = BrowserWindow.getAllWindows();
+    // ... (enviar dados para as janelas)
     allWindows.forEach(win => {
         if (!win.isDestroyed()) {
             win.webContents.send('onDadosSerial', dados);
@@ -33,39 +30,55 @@ function enviarDadosSerial(dados) {
         }
     });
 
-    // ======== TRATAMENTO DE RESPOSTAS DE SENSOR ==========
-    if (dados.startsWith("DISTANCIA:")) {
-        const valor = parseFloat(dados.split(":")[1]);
-        if (pendingResolvers["ULTRASSOM"]) {
-            pendingResolvers["ULTRASSOM"](valor);
-            delete pendingResolvers["ULTRASSOM"];
-        }
+    // Pega o item ATUAL da fila (o que está esperando resposta)
+    const waitingItem = commandQueue[0];
+
+    // Se não há item ou não estamos esperando, ignora (logs espúrios)
+    if (!waitingItem || !isWaitingForAck) {
+        return;
     }
 
-    if (dados.startsWith("ANALOG_VALOR:")) {
-        const valor = parseInt(dados.split(":")[1]);
-        if (pendingResolvers["ANALOG_READ"]) {
-            pendingResolvers["ANALOG_READ"](valor);
-            delete pendingResolvers["ANALOG_READ"];
-        }
-    }
+    let processed = false; // Flag para saber se o dado foi "consumido"
 
-    if (dados.startsWith("DIGITAL_VALOR:")) {
-        const valor = parseInt(dados.split(":")[1]);
-        if (pendingResolvers["DIGITAL_READ"]) {
-            pendingResolvers["DIGITAL_READ"](valor);
-            delete pendingResolvers["DIGITAL_READ"];
+    // --- TRATAMENTO DE RESPOSTA DE SENSOR ---
+    if (waitingItem.isSensor) {
+        let valor = null;
+        if (dados.startsWith("DISTANCIA:") && waitingItem.tag === "ULTRASSOM") {
+            valor = parseFloat(dados.split(":")[1]);
+            processed = true;
+        } else if (dados.startsWith("ANALOG_VALOR:") && waitingItem.tag === "ANALOG_READ") {
+            valor = parseInt(dados.split(":")[1]);
+            processed = true;
+        } else if (dados.startsWith("DIGITAL_VALOR:") && waitingItem.tag === "DIGITAL_READ") {
+            valor = parseInt(dados.split(":")[1]);
+            processed = true;
         }
-    }
-    
-    // TRATAMENTO DE ACK/FIM DE AÇÃO DO ARDUINO
-    if (dados === 'PAUSA_FIM' || dados === 'SERVO_FIM') {
-        if (isWaitingForAck) {
+
+        if (processed) {
+            waitingItem.resolve(valor); // Resolve a promessa com o valor lido
+            commandQueue.shift(); // Remove o item da fila
             isWaitingForAck = false; // Libera o fluxo
-            console.log(`[ACK] FIM de Ação Temporal (${dados}) recebido. Liberando a fila...`);
-            process.nextTick(sendNextCommandFromQueue); // Tenta enviar o próximo
+            process.nextTick(sendNextCommandFromQueue); // Envia o próximo
+            return; // Dado consumido
         }
     }
+
+    // --- TRATAMENTO DE ACK (FIM DE AÇÃO) ---
+    // (Apenas se não for uma resposta de sensor já tratada)
+    if (dados === 'PAUSA_FIM' || dados === 'SERVO_FIM' || dados === 'ACK') {
+        if (waitingItem.isWaitingForAck) {
+            waitingItem.resolve(); // Resolve a promessa (sem valor)
+            commandQueue.shift(); // Remove o item da fila
+            processed = true;
+        }
+        
+        isWaitingForAck = false; // Libera o fluxo
+        console.log(`[ACK] FIM de Ação (${dados}) recebido. Liberando a fila...`);
+        process.nextTick(sendNextCommandFromQueue); // Envia o próximo
+        return; // Dado consumido
+    }
+
+    // Se o dado não foi processado (log normal do Arduino), apenas ignora
 }
 
 async function listarPortas() {
@@ -122,11 +135,17 @@ async function conectarPorta(porta, baudRate) {
     }
 }
 
+// desconectarPorta (limpa a fila e rejeita promessas)
 async function desconectarPorta() {
     if (serialPort && serialPort.isOpen) {
         try {
-            // Limpa a fila e o estado de espera antes de fechar
-            commandQueue.length = 0;
+            // Rejeita todas as promessas pendentes na fila
+            while (commandQueue.length > 0) {
+                const item = commandQueue.shift();
+                if (item.reject) {
+                    item.reject(new Error("Desconectado durante a operação."));
+                }
+            }
             isWaitingForAck = false; 
             
             await serialPort.close();
@@ -141,35 +160,7 @@ async function desconectarPorta() {
     }
 }
 
-async function enviarComandoComRetorno(tag, comandoCompleto) {
-    if (!serialPort || !serialPort.isOpen) {
-        throw new Error("Dispositivo não conectado.");
-    }
-
-    return new Promise((resolve, reject) => {
-        // Registra o "resolve" da promessa para este tipo de comando
-        pendingResolvers[tag] = resolve;
-
-        // Envia o comando imediatamente (sem fila, leitura direta)
-        enviarComandoSerialImmediate(comandoCompleto, (err) => {
-            if (err) {
-                delete pendingResolvers[tag];
-                reject(err);
-            }
-        });
-
-        // Timeout de segurança caso não haja resposta
-        setTimeout(() => {
-            if (pendingResolvers[tag]) {
-                delete pendingResolvers[tag];
-                reject(new Error("Timeout aguardando resposta do sensor."));
-            }
-        }, 2000);
-    });
-}
-
-
-// FUNÇÃO CHAVE: Usa callbacks para garantir que a escrita funciona (CORREÇÃO DE "NÃO CHEGA NADA")
+// FUNÇÃO CHAVE: Usa callbacks para garantir que a escrita funciona
 function enviarComandoSerialImmediate(comando, callback) {
     if (!serialPort || !serialPort.isOpen) {
         return callback(new Error('Dispositivo não conectado.')); 
@@ -202,61 +193,96 @@ function sendNextCommandFromQueue() {
         return; 
     }
 
-    const nextCommand = commandQueue.shift();
+    const nextItem = commandQueue[0]; // Apenas "olha" (peek), não remove
+    const { comando, isSensor } = nextItem;
     
-    // 1. Verifica se o comando exige espera de ACK do Arduino
-    const requiresAck = nextCommand.startsWith('<AGUARDA') || 
-                        nextCommand.startsWith('<PAUSA') || 
-                        nextCommand.startsWith('<A:') || 
-                        nextCommand.startsWith('<C:');
+    // 1. Define se o comando exige um ACK
+    //    (led_pisca_n presumivelmente exige, led_left/right não)
+    const requiresAck = comando.startsWith('<AGUARDA') || 
+                          comando.startsWith('<PAUSA') || 
+                          comando.startsWith('<A:') || // Servo
+                          comando.startsWith('<C:') || // Servo
+                          comando.startsWith('<LED_TREZE'); // Comando 'led_pisca_n'
     
-    if (requiresAck) {
-        isWaitingForAck = true; 
-    }
+    isWaitingForAck = true; // Trava a fila
     
-    // 2. Envia o comando usando o método de callback
-    enviarComandoSerialImmediate(nextCommand, (error) => {
+    // 2. Envia o comando
+    enviarComandoSerialImmediate(comando, (error) => {
         if (error) {
             console.error(`[ERRO] Falha ao enviar comando da fila: ${error.message}`);
-            // Em caso de falha, libera a espera e tenta o próximo comando
+            nextItem.reject(error); // Rejeita a promessa
+            commandQueue.shift(); // Remove o item falho
             isWaitingForAck = false; 
-            setTimeout(sendNextCommandFromQueue, 0);
+            setTimeout(sendNextCommandFromQueue, 0); // Tenta o próximo
             return;
         }
         
         // Se o envio foi BEM SUCEDIDO:
         
-        // Se o comando NÃO exigia espera, envia o próximo imediatamente
-        if (!isWaitingForAck) {
+        if (isSensor) {
+            // Foi enviado, agora espera resposta do sensor (tratado em enviarDadosSerial)
+            nextItem.isWaitingForSensor = true; 
+        } else if (requiresAck) {
+            // Foi enviado, agora espera ACK (tratado em enviarDadosSerial)
+            nextItem.isWaitingForAck = true;
+        } else {
+            // Comando "Fire and Forget" (ex: led_left, digital_write)
+            // Não precisa de ACK e não é sensor.
+            nextItem.resolve(); // Resolve imediatamente
+            commandQueue.shift(); // Remove da fila
+            isWaitingForAck = false; // Libera para o próximo
             setTimeout(sendNextCommandFromQueue, 0); 
         }
-        // Se exigia espera, aguarda o ACK (PAUSA_FIM, etc.) para o próximo envio
     });
 }
 
-// Função pública para adicionar comandos à fila
-async function adicionarComandoNaFila(comando) {
-    if (!serialPort || !serialPort.isOpen) {
-        return { status: false, mensagem: 'Dispositivo não conectado.' };
-    }
-    
-    // Adiciona o comando à fila
-    commandQueue.push(comando);
-    
-    // Inicia/Continua o processamento da fila
-    if (!isWaitingForAck) {
-        sendNextCommandFromQueue();
-    }
-    
-    return { status: true, mensagem: `Comando adicionado à fila: ${comando}` };
-}
+// Função pública para adicionar comandos à fila (retorna a promessa real)
+async function enviarComandoSerialUnificado(comando, tag = null, isSensor = false) {
+  if (!serialPort || !serialPort.isOpen) {
+    throw new Error('Dispositivo não conectado.'); // Joga erro, a VM vai pegar
+  }
 
+  return new Promise((resolve, reject) => {
+    // 1. Criar o objeto 'item' primeiro
+    const item = {
+      comando,
+      tag,
+      isSensor,
+      resolve,
+      reject,
+      isWaitingForAck: false,
+      isWaitingForSensor: false
+    };
+
+    // 2. Adicionar o 'item' à fila
+    commandQueue.push(item);
+
+    // 3. Inicia/Continua o processamento da fila
+    if (!isWaitingForAck) {
+      sendNextCommandFromQueue();
+    }
+
+    // 4. Timeout de segurança (AGORA 'item' ESTÁ DEFINIDO CORRETAMENTE)
+    setTimeout(() => {
+      // Verifica se o 'item' ainda está na fila (não foi processado)
+      const index = commandQueue.indexOf(item);
+      if (index > -1) { 
+        // Se ainda está lá, rejeita a promessa por timeout
+        item.reject(new Error(`Timeout para o comando: ${comando}`));
+        
+        // Remove o item problemático da fila
+        commandQueue.splice(index, 1);
+        
+        isWaitingForAck = false; // Libera a fila
+        sendNextCommandFromQueue(); // Tenta o próximo comando
+      }
+    }, 5000); // 5 segundos de timeout por comando
+  });
+}
 
 module.exports = {
     listarPortas,
     conectarPorta,
     desconectarPorta,
-    // Substitui a função de envio pela função que gerencia a fila
-    enviarComandoSerial: adicionarComandoNaFila,
-    enviarComandoComRetorno, // Função para comandos com retorno
+    enviarComandoSerial: enviarComandoSerialUnificado,
 };

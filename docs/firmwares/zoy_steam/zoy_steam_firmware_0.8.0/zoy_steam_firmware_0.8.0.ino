@@ -228,6 +228,7 @@ void loop()
         if (pisca13Restantes == 0)
         {
           pisca13Ativo = false;
+          Serial.println("PAUSA_FIM");
         }
       }
     }
@@ -245,6 +246,7 @@ void loop()
       {
         piscaLeftAtivo = false;
         digitalWrite(LED_LEFT, LOW);
+        Serial.println("PAUSA_FIM");
       }
     }
   }
@@ -263,6 +265,7 @@ void loop()
       {
         piscaRightAtivo = false;
         digitalWrite(LED_RIGHT, LOW);
+        Serial.println("PAUSA_FIM");
       }
     }
   }
