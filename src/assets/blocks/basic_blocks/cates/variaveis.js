@@ -16,7 +16,7 @@
     /** 
      * Para esse bloco funcionar com o electron, é necessario 
      * aplicar o override de Blockly.dialog.prompt() mas isso não está ocorrendo
-     * essa função precisa ser corrigida para o bloco funcionar
+     * essa função precisa ter um tratamento especial no index.js onde o Blockly é inicializado.
     */
   };
 
