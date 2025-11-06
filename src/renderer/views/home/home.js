@@ -335,6 +335,72 @@ document.getElementById("abrirZoyGPTBtn").addEventListener("click", () => {
   window.electronAPI.abrirZoyGPT();
 });
 
+
+/**
+ * Configura um prompt personalizado (Modal Bootstrap) para substituir 
+ * o window.prompt() padrão do Blockly, que não funciona no Electron.
+ */
+function configurarPromptVariaveis() {
+  const modalElement = document.getElementById('variablePromptModal');
+  if (!modalElement) {
+    console.error('Modal de variáveis não encontrado no HTML!');
+    return;
+  }
+
+  // Pega a instância do Modal Bootstrap
+  const bootstrapModal = new bootstrap.Modal(modalElement);
+  
+  // Pega os elementos internos do modal
+  const modalText = document.getElementById('variablePromptText');
+  const modalInput = document.getElementById('variablePromptInput');
+  const saveButton = document.getElementById('variablePromptSave');
+  const cancelButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
+
+  let blocklyCallback = null; // Armazena a função de callback do Blockly
+
+  // Define a função de override
+  const meuPromptPersonalizado = (message, defaultValue, callback) => {
+    modalText.textContent = message;
+    modalInput.value = defaultValue;
+    blocklyCallback = callback; // Armazena a callback para ser chamada depois
+    bootstrapModal.show(); // Mostra o modal
+  };
+
+  // Handler do botão Salvar
+  saveButton.addEventListener('click', () => {
+    const value = modalInput.value;
+    if (blocklyCallback) {
+      blocklyCallback(value); // Retorna o valor para o Blockly
+    }
+    blocklyCallback = null; // Limpa a callback
+    bootstrapModal.hide();
+  });
+
+  // Handler para quando o modal é fechado (pelo 'X', 'Cancelar' ou clique fora)
+  modalElement.addEventListener('hidden.bs.modal', () => {
+    // Se o modal foi fechado sem salvar, 'blocklyCallback' ainda existirá
+    if (blocklyCallback) {
+      blocklyCallback(null); // Retorna 'null' (ação de cancelar) para o Blockly
+    }
+    blocklyCallback = null; // Limpa a callback
+  });
+
+  // Finalmente, registra a nossa função no Blockly
+  Blockly.dialog.setPrompt(meuPromptPersonalizado);
+
+  // OPCIONAL, mas recomendado: Faça o mesmo para 'alert' e 'confirm'
+  Blockly.dialog.setAlert((message, callback) => {
+    alert(message); // Você pode criar um modal Bootstrap para 'alert' também
+    if (callback) callback();
+  });
+
+  Blockly.dialog.setConfirm((message, callback) => {
+    // Você pode criar um modal Bootstrap para 'confirm' também
+    const result = window.confirm(message); // confirm() também pode falhar
+    callback(result);
+  });
+}
+
 // ----------------------------------------------------------------------------
 // ----------- Esconder/Exibir sidebar (menu lateral) -------------------------
 // ----------------------------------------------------------------------------
@@ -580,6 +646,9 @@ window.electronAPI.onErroSerial((data) => log(data.mensagem, "erro"));
 window.addEventListener("DOMContentLoaded", async () => {
   await initializeImports(); // Importa CSS, Bootstrap e Blockly
   await preloadImages(); // carrega as imagens e popula o carousel
+
+  // Configura o modal de prompt ANTES de criar o workspace
+  configurarPromptVariaveis();
 
   //Inicializa blocos básicos (efetua define dos blocos e constrói toolboxbasicBlocks)
   if (window.basicBlocks) window.basicBlocks();

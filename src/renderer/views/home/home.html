@@ -182,6 +182,26 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Modal de substituição do prompt() para variaveis, a função original violava os principios de seguraçãos do electron + CSP -->
+        <div class="modal fade" id="variablePromptModal" tabindex="-1" aria-labelledby="variableModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="variableModalLabel">Criar Variável</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="variablePromptText">Nome da nova variável:</p>
+                    <input type="text" class="form-control" id="variablePromptInput">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="variablePromptSave">OK</button>
+                </div>
+                </div>
+            </div>
+        </div>
 
         <!-- importando home.js - scripts - importações - funções-->
         <script src="home.js"></script>
