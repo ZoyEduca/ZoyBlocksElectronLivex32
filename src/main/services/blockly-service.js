@@ -10,7 +10,7 @@ function protegerLoops(codigo) {
 
   const header = `
     let ${loopCounterVar} = 0;
-    const ${limitVar} = 4;
+    const ${limitVar} = 60;
     function __checkLoop() {
       if (++${loopCounterVar} > ${limitVar}) {
         throw new Error("⚠️ Execução interrompida — limite máximo(60) de repetições atingido");
