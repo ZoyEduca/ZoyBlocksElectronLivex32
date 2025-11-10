@@ -262,21 +262,19 @@ async function enviarComandoSerialUnificado(comando, tag = null, isSensor = fals
       sendNextCommandFromQueue();
     }
 
-    // 4. Timeout de segurança (AGORA 'item' ESTÁ DEFINIDO CORRETAMENTE)
-    setTimeout(() => {
-      // Verifica se o 'item' ainda está na fila (não foi processado)
-      const index = commandQueue.indexOf(item);
-      if (index > -1) { 
-        // Se ainda está lá, rejeita a promessa por timeout
+    // Timeout baseado em inatividade, não no tempo total da execução
+    let timeoutTimer = setTimeout(() => {
+    const index = commandQueue.indexOf(item);
+    if (index > -1) {
         item.reject(new Error(`Timeout para o comando: ${comando}`));
-        
-        // Remove o item problemático da fila
         commandQueue.splice(index, 1);
-        
-        isWaitingForAck = false; // Libera a fila
-        sendNextCommandFromQueue(); // Tenta o próximo comando
-      }
-    }, 5000); // 5 segundos de timeout por comando
+        isWaitingForAck = false;
+        sendNextCommandFromQueue();
+    }
+    }, 5000);
+
+    // Reinicia o timeout toda vez que houver algum dado recebido
+    parser.on('data', () => clearTimeout(timeoutTimer));
   });
 }
 
