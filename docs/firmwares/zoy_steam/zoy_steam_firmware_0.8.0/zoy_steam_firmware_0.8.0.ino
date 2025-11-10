@@ -777,14 +777,16 @@ void processarComando(String cmd)
   }
   // === AGUARDA:N segundos - AGORA NÃO-BLOQUEANTE ===
   if (comando_temp == "AGUARDA")  {
-    int segundos = argumentos_temp.toInt();
+    argumentos_temp.trim();
+    float segundos = argumentos_temp.toFloat();  // ✅ Lê corretamente 1.5
     
     pausaAtiva = true;
-    tempoFimPausa = millis() + (segundos * 1000UL); // Usa UL para tempo longo
+    tempoFimPausa = millis() + (unsigned long)(segundos * 1000.0f); // ✅ converte para ms com fração
     
-    Serial.println("OK_AGUARDA_INICIO"); // Resposta imediata, Node.js aguarda PAUSA_FIM
+    Serial.println("OK_AGUARDA_INICIO");
     return;
   }
+
   // === BEEP:N ms - AGORA NÃO-BLOQUEANTE ===
   if (comando_temp == "BEEP") {
     int duracao = argumentos_temp.toInt();
