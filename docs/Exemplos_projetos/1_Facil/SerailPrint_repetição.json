@@ -1,0 +1,70 @@
+{
+  "blocks": {
+    "languageVersion": 0,
+    "blocks": [
+      {
+        "type": "controls_repeat_ext",
+        "id": "Oz$DUjWr]`6_|:^(Z-OJ",
+        "x": 50,
+        "y": 130,
+        "inputs": {
+          "TIMES": {
+            "block": {
+              "type": "math_number",
+              "id": "7AI?HXTblZog+:JIWBOh",
+              "fields": {
+                "NUM": 10
+              }
+            }
+          },
+          "DO": {
+            "block": {
+              "type": "serial_println",
+              "id": "sv2,_}7Y{MIA#F8glC!A",
+              "inputs": {
+                "TEXT": {
+                  "block": {
+                    "type": "text_join",
+                    "id": "PZGli@%Js_++foPAJj?G",
+                    "extraState": {
+                      "itemCount": 2
+                    },
+                    "inputs": {
+                      "ADD0": {
+                        "block": {
+                          "type": "text",
+                          "id": "Y]1/Ji0G7$JHSKm7;@n%",
+                          "fields": {
+                            "TEXT": "Nova leitura: "
+                          }
+                        }
+                      },
+                      "ADD1": {
+                        "block": {
+                          "type": "sensor_seguidor_linha",
+                          "id": "Pmf[YeqJ@NHMX;7;E(J;",
+                          "fields": {
+                            "PINO": "A3"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "next": {
+                "block": {
+                  "type": "aguarde_segundos",
+                  "id": "!s.k^8*rtNU5LD/.2AJ+",
+                  "fields": {
+                    "TEMPO": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
