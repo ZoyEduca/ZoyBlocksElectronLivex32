@@ -529,38 +529,88 @@ window.listarPortas = listarPortas;
 // Função para alternar a conexão
 let conectado = false;
 async function toggleConexao() {
+  const btnConectar = document.getElementById("btnConectar");
+  const toastEl = document.getElementById("statusToast");
+  const toastMensagem = document.getElementById("statusToastMensagem");
+  const toastIcon = document.getElementById("statusToastIcon");
+
   const portaSelecionada = document.getElementById("selectPorta").value;
-  const baudrateSelecionado = parseInt(document.getElementById("selectBaudrate").value); // Converte para número
+  const baudrateSelecionado = parseInt(document.getElementById("selectBaudrate").value);
 
-  if (conectado) {
-    // Desconectar
-    const resposta = await window.electronAPI.desconectarPorta();
-  if (resposta.status) {
-      alert(resposta.mensagem); // Exibe mensagem de sucesso
+  // Função interna: exibe toast temporário
+  const mostrarToast = (mensagem, tipo = "usb-conectado") => {
+    const icons = {
+      "usb-conectado": `
+        <span role="img" aria-label="usb-connected" class="text-success">
+          <svg viewBox="0 0 24 24" width="1.3em" height="1.3em" fill="currentColor" aria-hidden="true">
+            <path d="M10 3v10.55A4 4 0 1 0 14 17V9h3v3l4-4-4-4v3h-5V3h-2zM8 21a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/>
+          </svg>
+        </span>`,
+      "usb-desconectado": `
+        <span role="img" aria-label="usb-disconnected" class="text-danger">
+          <svg viewBox="0 0 24 24" width="1.3em" height="1.3em" fill="currentColor" aria-hidden="true">
+            <path d="M20.707 19.293 4.707 3.293a1 1 0 0 0-1.414 1.414l3.356 3.356A3.98 3.98 0 0 0 6 11a4 4 0 0 0 7 2.645V21h-1a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-1v-3.586l3.293 3.293a1 1 0 0 0 1.414-1.414zM13 10.414V9h1v1.414l-1-1zM8 13a2 2 0 0 1-2-2 1.99 1.99 0 0 1 .301-1.043l2.742 2.742A1.98 1.98 0 0 1 8 13z"/>
+            <path d="M15 7h3v3l4-4-4-4v3h-5V3h-2v3.586l2 2V7z"/>
+          </svg>
+        </span>`,
+      error: `
+        <span role="img" aria-label="error" class="text-danger">
+          <svg viewBox="64 64 896 896" width="1.2em" height="1.2em" fill="currentColor" aria-hidden="true">
+            <path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448
+            448-200.6 448-448S759.4 64 512 64zm165.4
+            595.6a8 8 0 010 11.3l-33.9 33.9a8 8
+            0 01-11.3 0L512 557.3l-120.2 147.5a8 8
+            0 01-11.3 0l-33.9-33.9a8 8 0
+            010-11.3L466.7 512 346.6 391.8a8 8
+            0 010-11.3l33.9-33.9a8 8 0
+            0111.3 0L512 466.7l120.2-120.2a8 8
+            0 0111.3 0l33.9 33.9a8 8 0
+            010 11.3L557.3 512l120.1 120.2z"></path>
+          </svg>
+        </span>`
+    };
 
-      conectado = false;
-      document.getElementById("btnConectar").textContent = "Conectar";
-      document.getElementById("btnConectar").classList.remove("btn-danger");
-      document.getElementById("btnConectar").classList.add("btn-warning");
+    toastIcon.innerHTML = icons[tipo] || "";
+    toastMensagem.textContent = mensagem;
+
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 1500 });
+    toast.show();
+  };
+
+  try {
+    if (conectado) {
+      // Desconectar
+      const resposta = await window.electronAPI.desconectarPorta();
+
+      if (resposta.status) {
+        mostrarToast("Dispositivo desconectado!", "usb-desconectado");
+        conectado = false;
+        btnConectar.textContent = "Conectar";
+        btnConectar.classList.remove("btn-danger");
+        btnConectar.classList.add("btn-warning");
+      } else {
+        mostrarToast(`Erro: ${resposta.mensagem}`, "error");
+      }
     } else {
-      alert(`Erro ao desconectar: ${resposta.mensagem}`);
-    }
-  } else {
-    // Conectar
-    const resposta = await window.electronAPI.conectarPorta(portaSelecionada, baudrateSelecionado);
-    if (resposta.status) {
-      alert(resposta.mensagem); // Exibe mensagem de sucesso
+      // Conectar
+      const resposta = await window.electronAPI.conectarPorta(portaSelecionada, baudrateSelecionado);
 
-      conectado = true;
-      document.getElementById("btnConectar").textContent = "Desconectar";
-      document.getElementById("btnConectar").classList.remove("btn-warning");
-      document.getElementById("btnConectar").classList.add("btn-danger");
-  } else {
-    alert(`Erro ao conectar: ${resposta.mensagem}`);
+      if (resposta.status) {
+        mostrarToast("Dispositivo conectado!", "usb-conectado");
+        conectado = true;
+        btnConectar.textContent = "Desconectar";
+        btnConectar.classList.remove("btn-warning");
+        btnConectar.classList.add("btn-danger");
+      } else {
+        mostrarToast(`Erro: ${resposta.mensagem}`, "error");
+      }
+    }
+  } catch (err) {
+    mostrarToast(`Erro inesperado: ${err.message}`, "error");
   }
 }
-}
 window.toggleConexao = toggleConexao;
+
 
 async function executarCodigo() {
   const preElement = document.getElementById("areaCodigo");
