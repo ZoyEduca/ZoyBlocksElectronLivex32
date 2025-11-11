@@ -3,9 +3,9 @@
  * Author              : Oliveira, Majela
  *                     : Lourenço, Moises
  *                     : Correia, Felipe
- * Updated             : Oliveira, Majela (Modificações para Assincronia)
- * Version             : v0.8.0 (Atualizado para Assincronia)
- * Date                : 21/10/2025
+ * Updated             : Correia, Felipe
+ * Version             : v0.8.1 (Implementação Serial_print)
+ * Date                : 11/11/2025
  * Description         : Firmware desenvolvido exclusivamente para o robô educacional Zoy STEAM
  * MODIFICADO para comunicação Assíncrona e Não-Bloqueante
  * License             : Licença Pública Geral Menor GNU(LGPL)
@@ -322,8 +322,26 @@ void processarComando(String cmd)
   }
   comando_temp.trim();
   argumentos_temp.trim();
+  
+  // ===  SERIAL_PRINT  - <SERIAL_PRINT:"Mensagem"> ===
+  if (comando_temp == "SERIAL_PRINT") {
+    argumentos_temp.trim();
 
-  // === NOVO: SOM (PWM, TEMPO) ===
+    // Remove aspas se existirem
+    if (argumentos_temp.startsWith("\"") && argumentos_temp.endsWith("\"")) {
+      argumentos_temp.remove(0, 1);
+      argumentos_temp.remove(argumentos_temp.length() - 1);
+    }
+
+    // Imprime o texto puro recebido
+    Serial.println(argumentos_temp);
+
+    // Opcional: sinal para o Node.js de fim de execução
+    // Serial.println("PAUSA_FIM");
+    return;
+  }
+
+  // === SOM (PWM, TEMPO) ===
   if (comando_temp == "SOM") {
     int sep1 = argumentos_temp.indexOf(','); // posição do 1º separador
     if (sep1 == -1)
@@ -770,7 +788,7 @@ void processarComando(String cmd)
   }
 
   if (comando_temp == "PARAR_DIREITO")  {
-       analogWrite(MOTOR_D1, 0);
+    analogWrite(MOTOR_D1, 0);
     analogWrite(MOTOR_D2, 0);
     Serial.println("OK");
     return;
@@ -829,11 +847,6 @@ void processarComando(String cmd)
     {
       Serial.println("ERRO:ARG_INVALIDO");
     }
-    return;
-  }
-  // === Comando ZOY de firmware ===
-  if (comando_temp == "ZOY" && argumentos_temp == "ZOY") {
-    Serial.println("FIRMWARE:ZOY_STEAM:v0.8.0"); // Versão atualizada
     return;
   }
    // === SERVO MOTOR <A:9> (Abrir a garra) - AGORA NÃO-BLOQUEANTE ===
@@ -924,7 +937,14 @@ void processarComando(String cmd)
     sprintf(msg, "Servo do pino %d PARAR ROTAÇÃO", servo360Pin);
     Serial.println(msg);
     return;
-}
+  }
+
+  // === Comando ZOY de firmware ===
+  if (comando_temp == "ZOY" && argumentos_temp == "ZOY") {
+    Serial.println("FIRMWARE:ZOY_STEAM:v0.8.1"); // Versão atualizada
+    return;
+  }
+  
   // Se o comando não foi reconhecido
   Serial.println("ERRO:COMANDO_INVALIDO");
 }
