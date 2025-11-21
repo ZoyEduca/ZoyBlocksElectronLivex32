@@ -25,83 +25,123 @@
     </script>
     <link rel="stylesheet" href="../home/home.css"> 
     <style>
-        /* Estilos específicos para a tela de jogos */
-        body, html { 
-            height: 100%; 
-            margin: 0; 
-            padding: 0; 
-            font-family: 'Inter', sans-serif; 
-            background-color: #f0f4f8; 
-          
-        }
-        
-        /* Layout principal: 100% da viewport */
-        #mainContainer { 
-            display: flex; 
-            flex-direction: column; 
-            height: 100%; 
-        }
-        #gameAndBlockly { 
-            display: flex; 
-            flex-grow: 1; 
-            overflow: hidden; 
-          
+    /* ------------------------------
+       VARIÁVEIS DE ESTILO
+    ------------------------------ */
+    :root {
+        --bg: #f1f5f9;
+        --white: #ffffff;
+        --border: #e2e8f0;
+        --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.08);
+        --shadow-sm: 0 4px 8px rgba(0, 0, 0, 0.05);
+        --radius: 12px;
+        --font: 'Inter', sans-serif;
+    }
+
+    /* ------------------------------
+       GLOBAL
+    ------------------------------ */
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: var(--font);
+        background: var(--bg);
+        color: #1e293b;
+    }
+
+    /* ------------------------------
+       LAYOUT PRINCIPAL
+    ------------------------------ */
+    #mainContainer {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    #gameAndBlockly {
+        display: flex;
+        flex-grow: 1;
+        overflow: hidden;
+    }
+
+    /* ------------------------------
+       ÁREA DO JOGO
+    ------------------------------ */
+    #gameArea {
+        flex-basis: 40%;
+        max-width: 40%;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        overflow-y: auto;
+    }
+
+    /* ------------------------------
+       ÁREA DO BLOCKLY
+    ------------------------------ */
+    #blocklyArea {
+        flex-basis: 60%;
+        max-width: 60%;
+        height: 100%;
+        border-left: 1px solid var(--border);
+        background: var(--white);
+    }
+
+    #blocklyGameWorkspace {
+        width: 100%;
+        height: 100%;
+    }
+
+    /* ------------------------------
+       BARRA DE CONTROLES
+    ------------------------------ */
+    #controls {
+        padding: 12px 24px;
+        background: var(--white);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        box-shadow: var(--shadow-sm);
+        z-index: 10;
+    }
+
+    /* ------------------------------
+       CANVAS DO LABIRINTO
+    ------------------------------ */
+    #gameCanvas {
+        width: 100%;
+        max-width: 100%;
+        border-radius: var(--radius);
+        background: var(--white);
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* ------------------------------
+       RESPONSIVIDADE
+    ------------------------------ */
+    @media (max-width: 1024px) {
+        #gameAndBlockly {
+            flex-direction: column;
         }
 
-        /* Área do Jogo */
-        #gameArea { 
-            flex-basis: 40%; 
-            max-width: 40%; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: flex-start; 
-            padding: 20px; 
-            overflow: auto; 
-        }
-        
-        /* Área do Blockly */
-        #blocklyArea { 
-            flex-basis: 60%; 
-            max-width: 60%; 
-            height: 100%;
-            border-left: 1px solid #e2e8f0;
-        }
-        #blocklyGameWorkspace { 
-            width: 100%; 
-            height: 100%; 
+        #gameArea,
+        #blocklyArea {
+            max-width: 100%;
+            flex-basis: 100%;
+            height: 50vh;
         }
 
-         
-        /* Responsividade para telas menores */
-        @media (max-width: 1024px) {
-            #gameAndBlockly {
-                flex-direction: column; 
-            }
-            #gameArea, #blocklyArea {
-                flex-basis: 100%;
-                max-width: 100%;
-                height: 50vh; 
-            }
-            #blocklyArea {
-                border-left: none;
-                border-top: 1px solid #e2e8f0;
-            }
-        
+        #blocklyArea {
+            border-left: none;
+            border-top: 1px solid var(--border);
         }
-        /* 🚀 CORREÇÃO UNIFICADA: Esconde todas as barras de rolagem do Blockly */
-        .blocklyWorkspace, .blocklyScrollbarHandle {
-            overflow: hidden !important; /* Já estava, mas reforça */
-        }
-        .blocklyVScrollbar, 
-        .blocklyHScrollbar, 
-        .blocklyScrollbarVertical,
-        .blocklyFlyoutScrollbar, /* Alvo Principal - Scrollbar da Caixa de Ferramentas */
-        .blocklyScrollbarHandle { /* Alvo Anterior - O retângulo que desliza */
-            /* Força a remoção de todos os componentes de scrollbar */
-            display: none !important;
-        }
-    </style>
+    }
+</style>
+
 </head>
 <body>
     <div id="mainContainer">
@@ -110,7 +150,7 @@
             <button 
                  class="mt-4 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out"
                  onclick="window.location.href='zoy_quiz.html'">
-                 Ir para o Quiz
+                 Quiz
             </button>
             <button 
                 class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out" 
@@ -119,7 +159,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-short inline-block mr-1" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
                 </svg>
-                Voltar para Robótica
+                Voltar
             </button>
             
             <button 
@@ -129,7 +169,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-fill inline-block mr-1" viewBox="0 0 16 16">
                     <path d="m11.596 8.697-5.594 3.996c-.57.408-1.396-.039-1.396-.717V4.118c0-.678.825-1.125 1.396-.717l5.594 3.996a.9.9 0 0 1 0 1.314z"/>
                 </svg>
-                Executar Programa
+                Executar
             </button>
             <button 
                 class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out" 
@@ -161,8 +201,7 @@
                 Pronto para começar.
             </div>
 
-            <pre id="generatedCodeDisplay">Nenhum bloco conectado</pre>
-        </div>
+            </div>
 
         <div id="gameAndBlockly">
             <div id="gameArea">
@@ -171,7 +210,7 @@
                 <button 
                     class="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 ease-in-out" 
                     onclick="window.resetGame()">
-                    Reiniciar Labirinto
+                    Reiniciar
                 </button>
             </div>
 
@@ -181,6 +220,18 @@
         </div>
     </div>
 
+    <div id="codeDisplayOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" style="display: none;">
+        <div class="bg-white p-6 rounded-lg shadow-2xl max-w-xl w-11/12">
+            <h4 class="text-lg font-bold text-zoy-dark mb-3">Código Gerado (JavaScript)</h4>
+            <pre id="generatedCodeDisplay" class="bg-gray-800 text-green-300 p-4 rounded-md overflow-auto max-h-96 text-sm">
+                Nenhum bloco conectado
+            </pre>
+            <button onclick="window.stopProgram()" 
+                    class="mt-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
+                Fechar / Parar Programa
+            </button>
+        </div>
+    </div>
     <xml id="toolboxMaze" style="display: none">
         <category name="Movimento" colour="#CC6666">
             <block type="maze_moveForward"></block>
@@ -264,8 +315,6 @@
                     [0, 1, 1, 1, 1, 1, 3] 
                 ]
             },
-            // --- NOVAS FASES (6 a 10) ---
-            
             // Fase 6: Curvas Fechadas (Requer repetição e virar)
             phase_6_turn_and_loop: {
                 size: 5,
@@ -346,7 +395,7 @@
         const ROBOT_COLOR = '#1e40af'; 
         const FACE_COLOR = '#ffffff';
 
-        // --- FUNÇÕES AUXILIARES DE ESTADO (mantidas) ---
+        // --- FUNÇÕES AUXILIARES DE ESTADO ---
 
         /** Função para mudar a dificuldade e recarregar o labirinto. */
         window.setDifficulty = function(newDifficulty) {
@@ -413,6 +462,7 @@
         window.moveForward = async function() {
             if (!window.isRunning) return false;
             
+            // Adiciona um atraso para a animação
             await window.delay(300); 
 
             let newX = currentPosition.x;
@@ -460,6 +510,7 @@
         window.turn = async function(direction) {
             if (!window.isRunning) return false;
             
+            // Adiciona um atraso para a animação
             await window.delay(300);
 
             if (direction === 'LEFT') {
@@ -502,8 +553,8 @@
             return MAZE[checkY][checkX] !== 0; 
         };
         
-        // --- LÓGICA DE DESENHO (Canvas) e LÓGICA DE CONTROLE DE CÓDIGO (Interface com Blockly) ---
-        
+        // --- LÓGICA DE DESENHO (Canvas) ---
+
         /**
          * Desenha o Robô Zoy estilizado no canvas.
          */
@@ -549,7 +600,7 @@
             if (!ctx) return;
 
             const canvasSize = Math.min(canvas.width, canvas.height);
-            // MAZE_SIZE é dinâmico agora (5 ou 7)
+            // MAZE_SIZE é dinâmico agora (5, 7 ou 8)
             const tileSize = canvasSize / MAZE_SIZE; 
             
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -585,14 +636,16 @@
             drawZoyRobot(currentPosition.x, currentPosition.y, tileSize, currentDirection);
         }
 
-        // --- LÓGICA DE CONTROLE DE CÓDIGO (Interface com Blockly) (mantida) ---
+        // --- LÓGICA DE CONTROLE DE CÓDIGO (Interface com Blockly) ---
         
         /** * Gera o código a partir do workspace do Blockly e atualiza o painel de exibição. */
         window.updateCodeDisplay = function() {
+            // A variável window.workspaceMaze é definida em zoy_jogos.js
             if (!window.Blockly || !window.workspaceMaze) return;
 
             const code = window.jsGenerator.workspaceToCode(window.workspaceMaze);
             
+            // Envolve o código em uma função JS assíncrona para execução segura
             const finalCode = `(async function() {\n${code}})();`;
             
             const displayElement = document.getElementById('generatedCodeDisplay');
@@ -600,45 +653,58 @@
             if (displayElement) {
                 displayElement.textContent = finalCode;
             }
+            // Retorna o código final para uso na execução
             return finalCode;
         };
         
         /** * Inicia a execução do programa Blockly. */
         window.executeProgram = async function() {
-            if (window.isRunning) return; 
+            if (window.isRunning) return; // Evita múltiplas execuções
             
-            if (typeof window.executeProgramInJS === 'function') {
-                return window.executeProgramInJS();
-            }
-            
-            const code = window.updateCodeDisplay(); 
+            const code = window.updateCodeDisplay(); // Pega o código mais recente
             
             if (!code || code.includes("Nenhum bloco conectado")) {
                 window.updateStatus("Conecte os blocos para criar um programa.", 'bg-yellow-200', 'text-yellow-800');
                 return;
             }
+
+            // NOVO: MOSTRA O OVERLAY DA JANELA DO CÓDIGO
+            const overlay = document.getElementById('codeDisplayOverlay');
+            if (overlay) {
+                overlay.classList.remove('hidden');
+                overlay.style.display = 'flex'; // Torna visível e usa flexbox para centralizar
+            }
             
-            window.resetGame(); 
+            window.resetGame(); // Reinicia o labirinto antes de começar
             window.isRunning = true;
             window.updateStatus('Executando programa...', 'bg-blue-200', 'text-blue-800');
             
             document.getElementById('btnExecutarPrograma').disabled = true;
             document.getElementById('btnPararPrograma').disabled = false;
 
+            // Execução real do código JS gerado (com as APIs globais)
             try {
+                // A função `eval` executa o código JS assíncrono que chama moveForward, turn, etc.
                 await eval(code); 
             } catch (e) {
+                // Erros esperados que param o loop (colisão, vitória)
                 if (e.message !== 'Collision or Game Over' && e.message !== 'Game Over') {
                     window.updateStatus(`ERRO DE EXECUÇÃO: ${e.message}`, 'bg-red-200', 'text-red-900');
                     console.error("Erro na execução do programa Blockly:", e);
                 }
             } finally {
-                if (window.isRunning) { 
+                if (window.isRunning) { // Se não foi parado por vitória, colisão ou erro
                     window.updateStatus('Programa Terminado. Reinicie para tentar novamente.', 'bg-gray-200', 'text-gray-700');
                 }
                 window.isRunning = false;
                 document.getElementById('btnExecutarPrograma').disabled = false;
                 document.getElementById('btnPararPrograma').disabled = true;
+                
+                // NOVO: ESCONDE O OVERLAY QUANDO A EXECUÇÃO TERMINA
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                    overlay.style.display = 'none';
+                }
             }
         }
         
@@ -648,10 +714,17 @@
             window.updateStatus("Execução interrompida pelo usuário.", 'bg-gray-200', 'text-gray-700');
             document.getElementById('btnExecutarPrograma').disabled = false;
             document.getElementById('btnPararPrograma').disabled = true;
+
+            // NOVO: ESCONDE O OVERLAY QUANDO O USUÁRIO CLICA EM PARAR/FECHAR
+            const overlay = document.getElementById('codeDisplayOverlay');
+            if (overlay) {
+                overlay.classList.add('hidden');
+                overlay.style.display = 'none';
+            }
         };
 
 
-        // --- INICIALIZAÇÃO E REDIMENSIONAMENTO (mantidas) ---
+        // --- INICIALIZAÇÃO E REDIMENSIONAMENTO ---
 
         function resizeCanvas() {
             const container = document.getElementById('gameArea');
