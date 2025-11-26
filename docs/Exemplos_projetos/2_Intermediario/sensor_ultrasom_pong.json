@@ -1,0 +1,51 @@
+{
+  "blocks": {
+    "languageVersion": 0,
+    "blocks": [
+      {
+        "type": "controls_repeat_ext",
+        "id": "Md=33z#Ak%m~[Nf//VZN",
+        "x": 190,
+        "y": 190,
+        "inputs": {
+          "TIMES": {
+            "block": {
+              "type": "math_number",
+              "id": "NS:3NVRl4dqnVn:ro!sX",
+              "fields": {
+                "NUM": 200
+              }
+            }
+          },
+          "DO": {
+            "block": {
+              "type": "serial_println",
+              "id": "3h|nA0R0zOq{P_|D(n)`",
+              "inputs": {
+                "TEXT": {
+                  "block": {
+                    "type": "zoy_ultrassom_distancia",
+                    "id": "7g/LOpHbNsdr}(dAq/U`",
+                    "fields": {
+                      "TRIG": "7",
+                      "ECHO": "8"
+                    }
+                  }
+                }
+              },
+              "next": {
+                "block": {
+                  "type": "aguarde_segundos",
+                  "id": "zgNa+r@qg}*TyC5`^F+S",
+                  "fields": {
+                    "TEMPO": 0.3
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
