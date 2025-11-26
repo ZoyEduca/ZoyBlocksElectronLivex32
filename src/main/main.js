@@ -316,6 +316,61 @@ ipcMain.handle("abrir-terminal-completo", () => {
 
 
 
+// ----------------------------------------------------------------------------
+// ----------- Handlers do IPC para areas games -------------------------------
+// ----------------------------------------------------------------------------
+ipcMain.handle("abrir-zoygames", () => {
+  const gptWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      preload: path.join(__dirname, "preload", "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      enableRemoteModule: false,
+      sandbox: false,
+    },
+  });
+
+  gptWindow.loadFile(
+    path.join(__dirname, "..", "renderer", "views", "zoyjogos", "zoyjogos.html")
+  );
+
+  // Habilita DevTools | Desative o DevTools em produção
+  if (process.env.NODE_ENV === "development") {
+    gptWindow.webContents.openDevTools();
+  } else {
+    gptWindow.webContents.closeDevTools();
+  }
+});
+
+
+ipcMain.handle("abrir-blocklygames", () => {
+  const gptWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      preload: path.join(__dirname, "preload", "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      enableRemoteModule: false,
+      sandbox: false,
+    },
+  });
+
+  gptWindow.loadFile(
+    path.join(__dirname, "..", "renderer", "views", "blockly_Games", "index.html")
+  );
+
+  // Habilita DevTools | Desative o DevTools em produção
+  if (process.env.NODE_ENV === "development") {
+    gptWindow.webContents.openDevTools();
+  } else {
+    gptWindow.webContents.closeDevTools();
+  }
+});
+
+
 
 // ----------------------------------------------------------------------------
 // ----------- Handlers do IPC para abrir links externos ----------------------

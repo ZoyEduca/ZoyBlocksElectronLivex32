@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Zoy Pong — Controle Serial</title>
+
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; object-src 'self'">
+
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+
+  <style>
+    html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background-color:#0f0f0f;}
+    #game-container{width:100%;height:100vh;display:block}
+    
+    /* Display para o Score e a Distância */
+    #scoreDisplay{
+      position:fixed;left:50%;top:12px;transform:translateX(-50%);
+      color:#fff;font-size:24px;z-index:900;
+      text-shadow: 0 0 5px #000;
+      background: rgba(0,0,0,0.25);
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+
+    /* Botão Voltar */
+    #backButton {
+      position: fixed;
+      bottom: 12px;
+      left: 12px;
+      background: rgba(255,255,255,0.95);
+      color: #222;
+      font-weight: bold;
+      border: 2px solid #444;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      z-index: 1000;
+      transition: all 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="scoreDisplay">
+    Jogador 1 (Sensor): 0 | Jogador 2 (CPU): 0 | Distância: <span id="distanceValue">20.0</span> cm
+  </div>
+
+  <button id="backButton" onclick="goBackToMenu()">Voltar</button>
+
+  <div id="game-container"></div>
+
+  <!-- Código do jogo integrado -->
+  <script>
+  /* -----------------------------------------------------------------
+     Zoy Pong 2D — Controle Serial (Estabilidade Máxima de Renderização)
+     ----------------------------------------------------------------- */
+
+  // --- Variáveis Globais ---
+  let lastDistance = 20.0;
+  let player;
+  let ball;
+  let opponentPaddle;
+  let distanceDisplayElement;
+  let player1Score = 0;
+  let player2Score = 0;
+
+  // Dimensões e Constantes
+  const GAME_WIDTH = 960;
+  const GAME_HEIGHT = 640;
+  const PADDLE_HEIGHT = 100;
+  const PADDLE_WIDTH = 20;
+  const BALL_SIZE = 20;
+
+
+  // ------------------------ Controle IPC (Electron) ------------------------
+  // Nota: para utilizar via Electron, exponha `electronAPI.onDadosSerial` no preload script
+  if (window.electronAPI && window.electronAPI.onDadosSerial) {
+      window.electronAPI.onDadosSerial((serialData) => {
+          const dataString = serialData.toString().trim();
+          const distanceMatch = dataString.match(/(\d+\.?\d*)/);
+
+          if (distanceMatch) {
+              const distance = parseFloat(distanceMatch[1]);
+              // limite de distâncias esperadas do sensor
+              lastDistance = Phaser.Math.Clamp(distance, 5, 40);
+          }
+      });
+  }
+
+  // ------------------------ Mapeamento do Sensor ------------------------
+  // Mapeia distância [5..40] cm para posição de raquete no eixo Y [540..100]
+  function mapDistanceToPaddleY(distance) {
+      // normaliza de 0..1
+      const t = Phaser.Math.Clamp((distance - 5) / (40 - 5), 0, 1);
+      // linear entre 540 (mais perto) e 100 (mais longe)
+      return Phaser.Math.Linear(540, 100, t);
+  }
+
+  // ------------------------ FUNÇÕES DE JOGO (Phaser) ------------------------
+
+  function startGame(scene) {
+      // coloca no centro e zera velocidade
+      ball.setPosition(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+      ball.body.setVelocity(0, 0);
+
+      const directionX = Math.random() < 0.5 ? 1 : -1;
+      const initialSpeed = 300;
+
+      ball.body.setVelocityX(initialSpeed * directionX);
+      ball.body.setVelocityY(Phaser.Math.FloatBetween(-150, 150));
+  }
+
+  function hitPaddle(ballObj, paddleObj) {
+      // ligeiro aumento de velocidade horizontal (controlado)
+      const currentVelX = ballObj.body.velocity.x;
+      const sign = currentVelX >= 0 ? 1 : -1;
+      let newVelocityX = currentVelX * 1.03; // reduzido para evitar atravessar
+      // garante um mínimo de velocidade
+      if (Math.abs(newVelocityX) < 200) {
+          newVelocityX = 200 * sign;
+      }
+      ballObj.body.setVelocityX(newVelocityX);
+
+      // efeito vertical baseado no ponto de contato
+      const diff = ballObj.y - paddleObj.y;
+      ballObj.body.setVelocityY(ballObj.body.velocity.y + diff * 5);
+  }
+
+  function updateScoreDisplay(element) {
+      if (element) {
+          element.innerHTML = `Jogador 1 (Sensor): <b>${player1Score}</b> | Jogador 2 (CPU): ${player2Score} | Distância: <span id="distanceValue">${lastDistance.toFixed(1)}</span> cm`;
+      }
+  }
+
+  function goBackToMenu() {
+      if (window.electronAPI && window.electronAPI.goBack) {
+          window.electronAPI.goBack();
+      } else {
+          window.location.href = 'zoyjogos.html';
+      }
+  }
+
+
+  // ------------------------ ESTRUTURA DA CENA ------------------------
+
+  function preload() {}
+
+  function create() {
+      const scene = this;
+      window._zoy_scene = scene;
+
+      scene.physics.world.setBounds(0, 0, GAME_WIDTH, GAME_HEIGHT);
+      scene.cameras.main.setBackgroundColor('#000000');
+
+      const playerX = PADDLE_WIDTH / 2 + 10;
+      const cpuX = GAME_WIDTH - PADDLE_WIDTH / 2 - 10;
+
+      // 1. RAQUETE JOGADOR (Sensor)
+      player = scene.add.rectangle(playerX, GAME_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT, 0x2ecc71);
+      player.setOrigin(0.5);
+
+      scene.physics.add.existing(player);
+      player.body.setImmovable(true);
+      player.body.setCollideWorldBounds(true);
+      player.body.setSize(PADDLE_WIDTH, PADDLE_HEIGHT);
+      // body offset = centraliza o corpo no game object
+      player.body.setOffset(-PADDLE_WIDTH / 2, -PADDLE_HEIGHT / 2);
+
+      // 2. CPU
+      opponentPaddle = scene.add.rectangle(cpuX, GAME_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT, 0xe74c3c);
+      opponentPaddle.setOrigin(0.5);
+
+      scene.physics.add.existing(opponentPaddle);
+      opponentPaddle.body.setImmovable(true);
+      opponentPaddle.body.setCollideWorldBounds(true);
+      opponentPaddle.body.setSize(PADDLE_WIDTH, PADDLE_HEIGHT);
+      opponentPaddle.body.setOffset(-PADDLE_WIDTH / 2, -PADDLE_HEIGHT / 2);
+
+      // 3. BOLA
+      ball = scene.add.circle(GAME_WIDTH / 2, GAME_HEIGHT / 2, BALL_SIZE / 2, 0xffa500);
+      ball.setOrigin(0.5);
+
+      scene.physics.add.existing(ball);
+      // usa corpo circular para colisões mais naturais
+      ball.body.setCircle(BALL_SIZE / 2);
+      ball.body.setOffset(-BALL_SIZE / 2, -BALL_SIZE / 2);
+      ball.body.setCollideWorldBounds(true);
+      ball.body.setBounce(1, 1);
+
+      // Linha central
+      const lineGraphics = scene.add.graphics({ lineStyle: { width: 2, color: 0x888888, alpha: 0.5 } });
+      lineGraphics.beginPath();
+      lineGraphics.moveTo(GAME_WIDTH / 2, 0);
+      lineGraphics.lineTo(GAME_WIDTH / 2, GAME_HEIGHT);
+      lineGraphics.strokePath();
+
+      // Colisões
+      scene.physics.add.collider(ball, player, hitPaddle, null, scene);
+      scene.physics.add.collider(ball, opponentPaddle, hitPaddle, null, scene);
+
+      distanceDisplayElement = document.getElementById('distanceValue');
+      scene.scoreDisplayElement = document.getElementById('scoreDisplay');
+
+      startGame(scene);
+  }
+
+  function update() {
+
+      // --------------------------- RAQUETE JOGADOR ---------------------------
+      if (distanceDisplayElement) {
+          distanceDisplayElement.innerText = lastDistance.toFixed(1);
+      }
+
+      const targetY = mapDistanceToPaddleY(lastDistance);
+
+      // LERP correto: from = player.y, to = targetY, t = 0..1
+      player.y = Phaser.Math.Linear(player.y, targetY, 0.2);
+      player.body.updateFromGameObject();
+
+      // --------------------------- RAQUETE CPU ---------------------------
+      const cpuTrackingSpeed = 5;
+      let targetCpuY = ball.body.velocity.x > 0 ? ball.y : GAME_HEIGHT / 2;
+
+      if (Math.abs(targetCpuY - opponentPaddle.y) > cpuTrackingSpeed) {
+          opponentPaddle.y += (targetCpuY > opponentPaddle.y ? cpuTrackingSpeed : -cpuTrackingSpeed);
+      }
+
+      opponentPaddle.y = Phaser.Math.Clamp(opponentPaddle.y, PADDLE_HEIGHT / 2, GAME_HEIGHT - PADDLE_HEIGHT / 2);
+      opponentPaddle.body.updateFromGameObject();
+
+      // --------------------------- PONTUAÇÃO ---------------------------
+      if (ball.x < 0) {
+          player2Score++;
+          updateScoreDisplay(this.scoreDisplayElement);
+          startGame(this);
+      } else if (ball.x > GAME_WIDTH) {
+          player1Score++;
+          updateScoreDisplay(this.scoreDisplayElement);
+          startGame(this);
+      }
+  }
+
+
+  // --------------------------- CONFIGURAÇÃO DO JOGO ---------------------------
+  const config = {
+      type: Phaser.AUTO,
+      width: GAME_WIDTH,
+      height: GAME_HEIGHT,
+      scale: {
+          mode: Phaser.Scale.FIT,
+          autoCenter: Phaser.Scale.CENTER_BOTH,
+          parent: 'game-container'
+      },
+      physics: {
+          default: 'arcade',
+          arcade: {
+              debug: true // coloque false quando finalizar testes
+          }
+      },
+      scene: {
+          preload: preload,
+          create: create,
+          update: update
+      }
+  };
+
+  // Inicialização
+  window.onload = function() {
+      new Phaser.Game(config);
+  };
+  </script>
+
+</body>
+</html>

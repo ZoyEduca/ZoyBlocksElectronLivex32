@@ -335,6 +335,16 @@ document.getElementById("abrirZoyGPTBtn").addEventListener("click", () => {
   window.electronAPI.abrirZoyGPT();
 });
 
+// ZoyGames
+document.getElementById("btnZoyGames").addEventListener("click", () => {
+  window.electronAPI.abrirZoyGames();
+});
+
+// BlocklyGames
+document.getElementById("btnBlocklyGames").addEventListener("click", () => {
+  window.electronAPI.abrirBlocklyGames();
+});
+
 
 /**
  * Configura um prompt personalizado (Modal Bootstrap) para substituir 
@@ -696,16 +706,6 @@ async function ajudaLinkOpen(e) {
     console.error("Falha ao abrir o link:", response.reason);
   }
 }
-
-// Exemplo no JavaScript da Tela Principal
-document.getElementById('btnBlocklyGames').addEventListener('click', () => {
-    // Abre o arquivo HTML do jogo em uma nova janela ou aba
-    window.open(
-        '../blockly_Games/index.html', // Caminho para o arquivo HTML do jogo
-        '_blank',                         // Abre em uma nova aba/janela
-        'width=1000,height=700,menubar=no,toolbar=no,location=no,status=no' // Opções
-    );
-});
 
 // ----------------------------------------------------------
 // --- EVENTOS PRINCIPAIS(DOMloading)------------------------
