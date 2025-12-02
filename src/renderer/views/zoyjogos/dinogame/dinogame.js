@@ -17,6 +17,17 @@ let isCrounch = false;
 let isPlayGame = false; // Indica se o jogo não foi iniciado ou personagem morto
 let gameSpeed = 5; // Velocidade inicial (pixels por frame)
 
+// Estrutura de Recortes dos Cactos
+const CACTUS_FRAMES = [
+    { frame: 0, x: 0, y: 20, w: 19, h: 36, offset_y: 0 }, // Cacto 1
+    { frame: 1, x: 18, y: 20, w: 37, h: 36, offset_y: 0 }, // Cacto 2
+    { frame: 2, x: 54, y: 20, w: 54, h: 36, offset_y: 0 }, // Cacto 3
+    { frame: 3, x: 107, y: 5, w: 27, h: 51, offset_y: -15 }, // Cacto 4 (mais alto, precisa de ajuste Y)
+    { frame: 4, x: 133, y: 5, w: 52, h: 51, offset_y: -15 }, // Cacto 5
+    { frame: 5, x: 210, y: 5, w: 52, h: 51, offset_y: -15 }, // Cacto 6
+    { frame: 6, x: 184, y: 5, w: 78, h: 51, offset_y: -15 }  // Cacto 7 (o maior)
+];
+
 // ------------------------ LEITURA SERIAL IPC (ADOTADA DO PONG) ------------------------
 if (window.electronAPI && window.electronAPI.onDadosSerial) {
     window.electronAPI.onDadosSerial((serialData) => {
@@ -46,8 +57,8 @@ const config = {
     physics: {
         default: "arcade",
         arcade: { 
-            gravity: { y: 1500 }, // Gravidade para o pulo e queda do Dino
-            debug: false   // MUDANÇA: ATIVADO o debug para visualização das caixas de colisão
+            // gravity: { y: 1500 }, // Gravidade para o jogo todo (desativada aqui, aplicada individualmente)
+            debug: true   // MUDANÇA: ATIVADO o debug para visualização das caixas de colisão
         } 
     },
     scene: { preload, create, update }
@@ -70,12 +81,19 @@ function preload() {
         frameWidth: 62, 
         frameHeight: 32 
     });
+
     // CHÃO (Imagem Simples para TileSprite)
     this.load.image("ground", "sprites/ground.png");
-    // CACTOS (Obstáculo)
-    this.load.image("cactus", "sprites/cactus.png");
-}
 
+    // PTERODÁTILO (Obstáculo)
+    this.load.spritesheet("ptero", "sprites/dino_fly.png", { 
+        frameWidth: 48, 
+        frameHeight: 48 
+    });
+
+    // CACTOS (Obstáculo)
+    this.load.image("cactos", "sprites/cactus.png");
+}
 
 // ------------------------ CREATE ------------------------
 function create() {
@@ -91,12 +109,14 @@ function create() {
     this.physics.add.existing(ground, true); // true = estático (não cai)
 
     // CONFIGURAÇÃO DO DINO
-    player = this.physics.add.sprite(120, GAME_HEIGHT - 100, "dino");
+    player = this.physics.add.sprite(100, GAME_HEIGHT - 100, "dino");
     player.setCollideWorldBounds(true);
     player.setGravityY(1500);
     
     // Ajuste da hitbox inicial (Dino em pé 60x60, mas vamos reduzir um pouco as bordas)
-    player.body.setSize(44, 50); 
+    player.body.setSize(42, 44); 
+    // Ajusta o corpo(hitbox) para a posição correta dentro do sprite
+    player.body.setOffset(10, 14);
     
     this.physics.add.collider(player, ground);
 
@@ -134,6 +154,14 @@ function create() {
         repeat: -1
     });
 
+    // NOVO: Animação de Voo do Pterodátilo
+    this.anims.create({
+        key: 'fly',
+        frames: this.anims.generateFrameNumbers('ptero', { start: 0, end: 1 }),
+        frameRate: 8, // Mais lento que o correr
+        repeat: -1
+    });
+
     // Inicia correndo
     player.play('run');
     isPlayGame = true; // Jogo começa rodando
@@ -147,29 +175,103 @@ function create() {
         callbackScope: this,
         loop: true
     });
+
+    // CONTROLES DO TECLADO (DEBUG)
+    this.cursors = this.input.keyboard.createCursorKeys();
+
+    // Variáveis para rastrear o estado do teclado
+    this.isKeyDown = {
+        up: false,
+        down: false
+    };
 }
 
 
-// ------------------------ FUNÇÃO DE CRIAR CACTO ------------------------
+// ------------------------ FUNÇÃO DE CRIAR OBSTÁCULO ------------------------
+
+const PTERO_HEIGHTS = [
+    GAME_HEIGHT - 45,  // Posição 1: Quase rasteiro (baixo)
+    GAME_HEIGHT - 100, // Posição 2: Centro do percurso
+    GAME_HEIGHT - 150  // Posição 3: Mais ao céu (alto)
+];
+const BASE_VELOCITY_FACTOR = 50; // Ajuste para a jogabilidade
+
 function spawnObstacle() {
     const scene = player.scene;
+    let obstacle;
 
-    // Cacto nasce na altura correta (ajustada para tocar o chão)
-    const cactus = scene.physics.add.image(GAME_WIDTH + 40, GAME_HEIGHT - 75, "cactus"); 
+    // A Chance de gerar um Pterodátilo é 30% após o score 400
+    const scoreThreshold = 400; 
+    // Nota: O score exibido é Math.floor(score / 10), então 400 pontos de score = 40 no contador.
+    const isPteroTime = (Math.floor(score / 10) >= scoreThreshold) && (Math.random() < 0.3);
+
+    if (isPteroTime) {
+        // --- 1. GERA PTERODÁTILO ---
+        
+        const height = Phaser.Math.RND.pick(PTERO_HEIGHTS);
+        
+        obstacle = scene.physics.add.sprite(GAME_WIDTH + 40, height, "ptero");
+        obstacle.play('fly'); // Começa a voar
+        
+    } else {
+        // --- 2. GERA CACTO ---
+        
+        const cactusData = Phaser.Math.RND.pick(CACTUS_FRAMES);
+        
+        // CORREÇÃO: Usamos scene.physics.add.image para garantir que seja um objeto de física
+        // Posição Y = Y do chão - (Metade da altura do cacto) + offset manual
+        const yPosition = GROUND_Y - (cactusData.h / 2) + cactusData.offset_y;
+
+        obstacle = scene.physics.add.image(GAME_WIDTH + 40, yPosition, "cactos");
+        
+        // Aplica o recorte (frame)
+        obstacle.setCrop(cactusData.x, cactusData.y, cactusData.w, cactusData.h);
+        
+        // Configura o corpo (hitbox)
+        obstacle.body.setSize(cactusData.w, cactusData.h);
+        // CORREÇÃO: Ajusta a hitbox para o recorte dentro do sprite.
+        obstacle.body.setOffset(cactusData.x, cactusData.y); 
+        
+        obstacle.body.setImmovable(true);
+    }
     
-    cactus.body.setAllowGravity(false); 
-    cactus.setVelocityX(gameSpeed);
-    cactus.setImmovable(true);
-    cactus.setCollideWorldBounds(false);
+    // Configurações Comuns
+    obstacle.body.setAllowGravity(false); 
+    obstacle.setImmovable(true);
+    obstacle.setCollideWorldBounds(false);
+    
+    // Velocidade baseada na gameSpeed atual
+    obstacle.setVelocityX(-(gameSpeed * BASE_VELOCITY_FACTOR)); 
 
-    obstacles.push(cactus);
-
-    scene.physics.add.collider(player, cactus, gameOver, null, scene);
+    obstacles.push(obstacle);
+    scene.physics.add.collider(player, obstacle, gameOver, null, scene);
 }
 
 
 // ------------------------ UPDATE LOOP ------------------------
 function update() {
+
+    // --- LÓGICA DE TESTE/DEBUG usando TECLADO para jogar ---
+    // PULO (Seta para CIMA)
+    if (this.cursors.up.isDown) {
+        this.isKeyDown.up = true;
+        // Força o sensor a um valor que dispara o PULO (< 15cm)
+        sensorDistancia = 5; 
+    } else if (this.isKeyDown.up) {
+        this.isKeyDown.up = false;
+        // Quando solta, restaura um valor neutro (longe, mas dentro do limite)
+        sensorDistancia = 40; 
+    }
+    // AGACHAR (Seta para BAIXO)
+    if (this.cursors.down.isDown) {
+        this.isKeyDown.down = true;
+        // Força o sensor a um valor que dispara o AGACHAR (20cm - 30cm)
+        sensorDistancia = 25; 
+    } else if (this.isKeyDown.down) {
+        this.isKeyDown.down = false;
+        // Quando solta, restaura um valor neutro
+        sensorDistancia = 40; 
+    }
     
     if (isPlayGame) {
 
