@@ -41,7 +41,7 @@ function mapDistanceToPaddleY(distance) {
   // normaliza de 0..1
   const t = Phaser.Math.Clamp((distance - 5) / (40 - 5), 0, 1);
   // linear entre 540 (mais perto) e 100 (mais longe)
-  return Phaser.Math.Linear(540, 100, t);
+  return Phaser.Math.Linear(600, 60, t);
 }
 
 // ------------------------ FUNÇÕES DE JOGO (Phaser) ------------------------
@@ -187,6 +187,12 @@ function update() {
   player.y = Phaser.Math.Linear(player.y, targetY, 0.1);
   player.body.updateFromGameObject();
 
+  // 5. Garantir física consistente
+  player.body.setSize(PADDLE_WIDTH, PADDLE_HEIGHT);
+  player.body.setOffset(0, 0);
+  player.body.setImmovable(true);
+  player.body.setMaxVelocity(0, 500);
+
   // --------------------------- RAQUETE CPU ---------------------------
   const cpuTrackingSpeed = 5;
   let targetCpuY = ball.body.velocity.x > 0 ? ball.y : GAME_HEIGHT / 2;
@@ -267,7 +273,7 @@ const config = {
     default: "arcade",
     arcade: {
       // Modo debug para visualizar corpos físicos
-      debug: true, // coloque false quando finalizar testes
+      debug: false, // coloque false quando finalizar testes
     },
   },
   scene: {
