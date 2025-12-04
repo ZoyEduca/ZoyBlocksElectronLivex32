@@ -14,6 +14,8 @@ scikit-learn>=1.4.0
 scipy>=1.11.0
 transformers>=4.44.0
 
+# OpenCV para processamento de imagens (zoyVision)
+opencv-python
 
 # instalar manualmente
 # Instalar o torch com suporte somente para CPU - sem cuda, gpu ...
