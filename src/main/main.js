@@ -394,7 +394,7 @@ function isSafeUrl(url) {
   try {
     const parsedUrl = new URL(url);
     // Permitindo apenas https:// para maior segurança
-    if (parsedUrl.protocol !== "https:") {
+    if (parsedUrl.protocol !== "http:") {
       return false;
     }
     // Adicione outros domínios confiáveis conforme necessário

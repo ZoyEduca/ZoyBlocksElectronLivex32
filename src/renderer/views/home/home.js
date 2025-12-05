@@ -699,7 +699,7 @@ document.getElementById("limparTerminalBtn")?.addEventListener("click", () => {
 
 async function ajudaLinkOpen(e) {
   e.preventDefault(); // Previne o comportamento padrão (abrir no próprio window)
-  const url = "https://zoy.com.br";
+  const url = "http://zoy.com.br";
   const response = await window.electronAPI.openExternal(url);
 
   if (!response.ok) {
