@@ -1,6 +1,6 @@
 {
   "name": "zoyblocks_live",
-  "version": "0.1.0",
+  "version": "1.8.0",
   "description": "Ambiente educacional de robótica da Zoy Educa",
   "license": "ISC",
   "author": "Majela Oliveira, Felipe Correia, Moises Bandeira",
@@ -51,6 +51,13 @@
       {
         "from": "python/",
         "to": "python",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "models/",  
+        "to": "models",
         "filter": [
           "**/*"
         ]

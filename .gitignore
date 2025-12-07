@@ -146,6 +146,7 @@ vite.config.ts.timestamp-*
 /out/
 out/
 dist/
+models/
 
 # Pasta de build e sketches temporários do Arduino CLI (criadas pelo Node.js)
 /temp_sketch
@@ -156,3 +157,4 @@ dist/
 
 # Pasta do Arduino CLI (cache de cores e logs)
 /.arduino15/
+
