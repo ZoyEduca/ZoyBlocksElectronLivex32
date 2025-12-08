@@ -140,28 +140,42 @@ ipcMain.handle("perguntar", async (event, pergunta) => {
       return;
     }
 
-    let resposta = "";
+    let buffer = "";
 
     const onData = (data) => {
-      resposta += data.toString();
-      try {
-        const json = JSON.parse(resposta.trim());
-        pythonProcess.stdout.removeListener("data", onData);
-        resolve(json.resposta);
-      } catch (e) {
-        // Continua esperando por mais dados
+      buffer += data.toString();
+
+      // processar linha por linha
+      const lines = buffer.split("\n");
+      buffer = lines.pop(); // última linha pode estar incompleta
+
+      for (const line of lines) {
+        const t = line.trim();
+        if (!t) continue;
+
+        // Tenta parsear JSON
+        try {
+          const json = JSON.parse(t);
+          pythonProcess.stdout.removeListener("data", onData);
+          resolve(json.resposta);
+        } catch (e) {
+          // Não é JSON → é log → ignore
+          console.log("Python stdout:", t);
+        }
       }
     };
 
     pythonProcess.stdout.on("data", onData);
 
+    // Envia pergunta ao python
     pythonProcess.stdin.write(JSON.stringify({ pergunta }) + "\n");
   });
 });
 
+
 // === LOG DE CONVERSAS ===
 ipcMain.handle("log-conversation", async (event, pergunta, resposta) => {
-  const logDir = path.join(app.getPath("home"), "logs"); // Diretório para salvar os logs, ex: desktop/logs
+  const logDir = path.join(app.getPath("desktop"), "logs"); // Diretório para salvar os logs, ex: desktop/logs
   const logFilePath = path.join(logDir, "conversas.log"); // Caminho completo do arquivo de log
 
   try {
