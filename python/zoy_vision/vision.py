@@ -99,15 +99,15 @@ def detect_gesture(fingers_list, total_fingers):
     """
     # Punho Fechado: 0 dedos ou apenas dedão (tolerância)
     if total_fingers == 0 or (total_fingers == 1 and fingers_list[0] == 1):
-        return "FIST"
+        return "FECHADA"
     
     # Mão Aberta: 4 ou 5 dedos
     if total_fingers >= 4:
-        return "OPEN"
-    # V: Indicador e Médio ON (ignora dedão), Anelar e Mindinho OFF
-    if fingers_list[1] == 1 and fingers_list[2] == 1 and fingers_list[3] == 0 and fingers_list[4] == 0:
-        return "V_SIGN"
-    return "UNKNOWN"
+        return "ABERTA"
+    # V: Indicador ON (ignora dedão), Resto dos dedos OFF
+    if fingers_list[1] == 1 and fingers_list[2] == 0 and fingers_list[3] == 0 and fingers_list[4] == 0:
+        return "INDICADOR"
+    return "INDEFINIDO"
 
 def process_zone_logic(cx, cy, gesture, width, height, left_bound, right_bound):
     """
@@ -120,32 +120,32 @@ def process_zone_logic(cx, cy, gesture, width, height, left_bound, right_bound):
     # 1. ZONA CENTRAL (Prioridade Máxima para PARAR)
     if left_bound < cx < right_bound:
         zone_name = "center"
-        if gesture == "OPEN":
+        if gesture == "ABERTA":
             return "center", ["<PARAR:0,0>", "<LED_LEFT:LOW>", "<LED_RIGHT:LOW>"]
 
     # 2. ESQUERDA
     elif cx < left_bound:
         if cy < mid_height: # Cima
             zone_name = "left_up"
-            if gesture == "FIST": command = "<LED_LEFT:HIGH>"
-            elif gesture == "OPEN": command = "<LED_LEFT:LOW>"
+            if gesture == "FECHADA": command = "<LED_LEFT:HIGH>"
+            elif gesture == "ABERTA": command = "<LED_LEFT:LOW>"
         else: # Baixo
             zone_name = "left_down"
-            if gesture == "FIST": command = "<MOTOR_ESQUERDO_FRENTE:150>"
-            elif gesture == "OPEN": command = "<PARAR_ESQUERDO:>"
-            elif gesture == "V_SIGN": command = "<MOTOR_ESQUERDO_TRAS:150>"
+            if gesture == "FECHADA": command = "<MOTOR_ESQUERDO_FRENTE:80>"
+            elif gesture == "ABERTA": command = "<PARAR_ESQUERDO:>"
+            elif gesture == "INDICADOR": command = "<MOTOR_ESQUERDO_TRAS:80>"
 
     # 3. DIREITA
     elif cx > right_bound:
         if cy < mid_height: # Cima
             zone_name = "right_up"
-            if gesture == "FIST": command = "<LED_RIGHT:HIGH>"
-            elif gesture == "OPEN": command = "<LED_RIGHT:LOW>"
+            if gesture == "FECHADA": command = "<LED_RIGHT:HIGH>"
+            elif gesture == "ABERTA": command = "<LED_RIGHT:LOW>"
         else: # Baixo
             zone_name = "right_down"
-            if gesture == "FIST": command = "<MOTOR_DIREITO_FRENTE:150>"
-            elif gesture == "OPEN": command = "<PARAR_DIREITO:>"
-            elif gesture == "V_SIGN": command = "<MOTOR_DIREITO_TRAS:150>"
+            if gesture == "FECHADA": command = "<MOTOR_DIREITO_FRENTE:80>"
+            elif gesture == "ABERTA": command = "<PARAR_DIREITO:>"
+            elif gesture == "INDICADOR": command = "<MOTOR_DIREITO_TRAS:80>"
             
     return zone_name, command
 
@@ -228,21 +228,23 @@ def main():
                             last_send_time[zone_name] = current_time
 
             # --- VISUALIZAÇÃO (Linhas e Texto) ---
+            # cv2.line(imagem, ponto_inicial, ponto_final, cor_BGR, espessura)
             cv2.line(frame, (left_bound, 0), (left_bound, height), (255, 0, 0), 2)
             cv2.line(frame, (right_bound, 0), (right_bound, height), (255, 0, 0), 2)
-            cv2.line(frame, (0, mid_height), (left_bound, mid_height), (0, 255, 255), 1)
-            cv2.line(frame, (right_bound, mid_height), (width, mid_height), (0, 255, 255), 1)
+            cv2.line(frame, (0, mid_height), (left_bound, mid_height), (255, 0, 0), 1)
+            cv2.line(frame, (right_bound, mid_height), (width, mid_height), (255, 0, 0), 1)
 
-            cv2.putText(frame, "L-UP", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
-            cv2.putText(frame, "L-DOWN", (10, mid_height + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
-            cv2.putText(frame, "R-UP", (right_bound + 10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
-            cv2.putText(frame, "R-DOWN", (right_bound + 10, mid_height + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
-            cv2.putText(frame, "CENTER", (left_bound + 10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
+            # cv2.putText(imagem, texto, posicao, fonte, tamanho_fonte, cor_BGR, espessura)
+            cv2.putText(frame, "ESQ-CIMA", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (123, 0, 255), 1)
+            cv2.putText(frame, "ESQ-BAIXO", (10, mid_height + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (123, 0, 255), 1)
+            cv2.putText(frame, "DIR-CIMA", (right_bound + 10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (123, 0, 255), 1)
+            cv2.putText(frame, "DIR-BAIXO", (right_bound + 10, mid_height + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (123, 0, 255), 1)
+            cv2.putText(frame, "CENTRO", (left_bound + 10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (123, 0, 255), 1)
 
             # --- INFORMAÇÃO DO MOUSE (Y Invertido) ---
             inverted_y = height - mouse_y
-            cv2.rectangle(frame, (mouse_x + 10, mouse_y - 25), (mouse_x + 130, mouse_y - 5), (0,0,0), -1)
-            cv2.putText(frame, f"X:{mouse_x} Y:{inverted_y}", (mouse_x + 15, mouse_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+            cv2.rectangle(frame, (mouse_x + 10, mouse_y - 25), (mouse_x + 130, mouse_y - 5), (153, 150, 125), -1)
+            cv2.putText(frame, f"X:{mouse_x} Y:{inverted_y}", (mouse_x + 15, mouse_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (216, 109, 39), 2)
 
             cv2.imshow(window_name, frame)
 

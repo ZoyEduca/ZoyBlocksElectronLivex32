@@ -146,6 +146,7 @@ vite.config.ts.timestamp-*
 out/
 dist/
 python/models/
+/models/
 models/
 
 # Pasta de build e sketches temporários do Arduino CLI (criadas pelo Node.js)
