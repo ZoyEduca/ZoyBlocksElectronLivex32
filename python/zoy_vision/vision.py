@@ -99,14 +99,14 @@ def detect_gesture(fingers_list, total_fingers):
     """
     # Punho Fechado: 0 dedos ou apenas dedão (tolerância)
     if total_fingers == 0 or (total_fingers == 1 and fingers_list[0] == 1):
-        return "FECHADA"
+        return "FIST"
     
     # Mão Aberta: 4 ou 5 dedos
     if total_fingers >= 4:
-        return "ABERTA"
+        return "OPEN"
     # V: Indicador e Médio ON (ignora dedão), Anelar e Mindinho OFF
     if fingers_list[1] == 1 and fingers_list[2] == 1 and fingers_list[3] == 0 and fingers_list[4] == 0:
-        return "V_SINAL"
+        return "V_SIGN"
     return "UNKNOWN"
 
 def process_zone_logic(cx, cy, gesture, width, height, left_bound, right_bound):
