@@ -1,28 +1,29 @@
 # ---------------------------
 # Núcleo científico (fixado para evitar NumPy 2.x)
 # ---------------------------
-numpy==1.26.4
-scipy==1.11.4
-scikit-learn==1.3.2   # última versão compatível com numpy 1.26
+numpy==1.26.0
+scipy==1.13.1
+scikit-learn==1.7.2   # última versão compatível com numpy 1.26
 
 # ---------------------------
 # PyTorch CPU-only (sem CUDA, sem visão, sem áudio)
 # ---------------------------
-torch==2.4.1+cpu --index-url https://download.pytorch.org/whl/cpu
+torch==2.2.1+cpu --index-url https://download.pytorch.org/whl/cpu
 
 # ---------------------------
 # Transformers + Sentence Transformers
 # (versões compatíveis com Torch + numpy 1.26)
 # ---------------------------
-transformers==4.39.3
-sentence-transformers==2.5.1
+transformers==4.57.1
+sentence-transformers==5.1.0
 
 # ---------------------------
-# OpenCV (para zoyVision)
+# OpenCV (para zoyVision) - mediaPipe identificação de pontos(gestos)
 # ---------------------------
-opencv-python==4.8.1.78
+opencv-python==4.12.0.88
+mediapipe==0.10.21
 
 # ---------------------------
 # Utilitários
 # ---------------------------
-pyinstaller==6.7.0
+pyinstaller==6.17.0
