@@ -8,33 +8,30 @@ from PyInstaller.utils.hooks import collect_all
 # Gera: datas, binaries e hiddenimports
 mp_datas, mp_binaries, mp_hiddenimports = collect_all('mediapipe')
 
-# --- CORREÇÃO DE CAMINHO PARA LINUX ---
-# Usa 'lib' minúsculo e inclui a versão do Python no caminho, que é o padrão do Linux/venv.
-python_version = f'python{sys.version_info.major}.{sys.version_info.minor}'
+# Caminho ABSOLUTO do site-packages (igual ao seu spec anterior)
 site_packages = os.path.abspath(
-    os.path.join('..', '..', 'venv', 'lib', python_version, 'site-packages')
+    os.path.join('..', '..', 'venv', 'Lib', 'site-packages')
 )
 
 block_cipher = None
 
 a = Analysis(
     ['vision.py'],
-    # ADICIONADO: O caminho do site-packages para que o PyInstaller encontre as libs dinâmicas
-    pathex=[os.path.abspath('.'), site_packages],
-    binaries=mp_binaries,            # binários do MediaPipe 
+    pathex=[os.path.abspath('.')],   # mantém o padrão do spec de referência
+    binaries=mp_binaries,            # binários do MediaPipe
     datas=[
         # --- OpenCV (importantíssimo para não quebrar) ---
         (os.path.join(site_packages, 'cv2'), 'cv2'),
 
         # --- NumPy (necessário para o OpenCV) ---
         (os.path.join(site_packages, 'numpy'), 'numpy'),
-    ] + mp_datas,                     # adiciona dados do MediaPipe (.tflite, .binarypb) 
+    ] + mp_datas,                     # adiciona dados do MediaPipe (.tflite, .binarypb)
     hiddenimports=[
-        # OpenCV [cite: 3]
+        # OpenCV
         'cv2',
         'cv2.data',
 
-        # NumPy imports usados internamente [cite: 3]
+        # NumPy imports usados internamente
         'numpy',
         'numpy.core._dtype',
         'numpy.core._methods',
@@ -65,7 +62,7 @@ coll = COLLECT(
         bootloader_ignore_signals=False,
         strip=False,
         upx=True,
-        console=True,  # deixe True para ver logs, ou mude para False [cite: 5]
+        console=True,  # deixe True para ver logs, ou mude para False
         disable_windowed_traceback=False,
         argv_emulation=False,
         target_arch=None,
