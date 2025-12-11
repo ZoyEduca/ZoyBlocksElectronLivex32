@@ -5,7 +5,7 @@
   const motoresAvancados = () => {
     Blockly.defineBlocksWithJsonArray([
       {
-        type: "zoy_pwm_motor_esquerdo_frente",
+        type: "steam_pwm_motor_esquerdo_frente",
         message0: "Motor Esquerdo (Frente): Potência %1 (PWM)",
         args0: [
           {
@@ -24,7 +24,7 @@
       },
 
       {
-        type: "zoy_pwm_motor_esquerdo_tras",
+        type: "steam_pwm_motor_esquerdo_tras",
         message0: "Motor Esquerdo (Trás): Potência %1 (PWM)",
         args0: [
           {
@@ -43,7 +43,7 @@
       },
 
       {
-        type: "zoy_pwm_motor_direito_frente",
+        type: "steam_pwm_motor_direito_frente",
         message0: "Motor Direito (Frente): Potência %1 (PWM)",
         args0: [
           {
@@ -62,7 +62,7 @@
       },
 
       {
-        type: "zoy_pwm_motor_direito_tras",
+        type: "steam_pwm_motor_direito_tras",
         message0: "Motor Direito (Trás): Potência %1 (PWM)",
         args0: [
           {
@@ -81,7 +81,7 @@
       },
 
       {
-        type: "zoy_percent_motor_esquerdo_frente",
+        type: "steam_percent_motor_esquerdo_frente",
         message0: "Motor Esquerdo (Frente): Potência %1 (%)",
         args0: [
           {
@@ -100,7 +100,7 @@
       },
 
       {
-        type: "zoy_percent_motor_esquerdo_tras",
+        type: "steam_percent_motor_esquerdo_tras",
         message0: "Motor Esquerdo (Trás): Potência %1 (%)",
         args0: [
           {
@@ -119,7 +119,7 @@
       },
 
       {
-        type: "zoy_percent_motor_direito_frente",
+        type: "steam_percent_motor_direito_frente",
         message0: "Motor Direito (Frente): Potência %1 (%)",
         args0: [
           {
@@ -138,7 +138,7 @@
       },
 
       {
-        type: "zoy_percent_motor_direito_tras",
+        type: "steam_percent_motor_direito_tras",
         message0: "Motor Direito (Trás): Potência %1 (%)",
         args0: [
           {
@@ -157,7 +157,7 @@
       },
 
       {
-        type: "zoy_motores_pinos_digital",
+        type: "steam_motores_pinos_digital",
         message0: "Defina o Pino %1 do Motor como %2",
         args0: [
           {
@@ -187,7 +187,7 @@
       },
 
       {
-        type: "zoy_motores_pinos_pwm",
+        type: "steam_motores_pinos_pwm",
         message0: "Definir pino %1 com saída: %2 PWM (0-255)",
         args0: [
           {
@@ -217,7 +217,7 @@
       },
 
       {
-        type: "zoy_motores_pinos_porcentagem",
+        type: "steam_motores_pinos_porcentagem",
         message0: "Definir pino %1 com saída: %2 %% (0-100%%)",
         args0: [
           {
@@ -249,63 +249,63 @@
     ]);
 
     // Geração de código JS
-    Blockly.JavaScript.forBlock["zoy_pwm_motor_esquerdo_frente"] = (block) =>
+    Blockly.JavaScript.forBlock["steam_pwm_motor_esquerdo_frente"] = (block) =>
       `motor_esquerdo_frente("MOTOR_ESQUERDO_FRENTE",${block.getFieldValue(
         "PWM"
       )})\n`;
 
-    Blockly.JavaScript.forBlock["zoy_pwm_motor_esquerdo_tras"] = (block) =>
+    Blockly.JavaScript.forBlock["steam_pwm_motor_esquerdo_tras"] = (block) =>
       `motor_esquerdo_tras("MOTOR_ESQUERDO_TRAS",${block.getFieldValue(
         "PWM"
       )})\n`;
 
-    Blockly.JavaScript.forBlock["zoy_pwm_motor_direito_frente"] = (block) =>
+    Blockly.JavaScript.forBlock["steam_pwm_motor_direito_frente"] = (block) =>
       `motor_direito_frente("MOTOR_DIREITO_FRENTE",${block.getFieldValue(
         "PWM"
       )})\n`;
 
-    Blockly.JavaScript.forBlock["zoy_pwm_motor_direito_tras"] = (block) =>
+    Blockly.JavaScript.forBlock["steam_pwm_motor_direito_tras"] = (block) =>
       `motor_direito_tras("MOTOR_DIREITO_TRAS",${block.getFieldValue(
         "PWM"
       )})\n`;
 
     // Funções com porcentagem
-    Blockly.JavaScript.forBlock["zoy_percent_motor_esquerdo_frente"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_percent_motor_esquerdo_frente"] = function (block) {
       // Converte porcentagem (0-100) para valor PWM (0-255)
       const pwmConvert = Math.round((block.getFieldValue("VALUE") / 100) * 255);
       return `motor_esquerdo_frente("MOTOR_ESQUERDO_FRENTE","${pwmConvert}")\n`;
     };
-    Blockly.JavaScript.forBlock["zoy_percent_motor_esquerdo_tras"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_percent_motor_esquerdo_tras"] = function (block) {
       // Converte porcentagem (0-100) para valor PWM (0-255)
       const pwmConvert = Math.round((block.getFieldValue("VALUE") / 100) * 255);
       return `motor_esquerdo_tras("MOTOR_ESQUERDO_TRAS","${pwmConvert}")\n`;
     };
-    Blockly.JavaScript.forBlock["zoy_percent_motor_direito_frente"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_percent_motor_direito_frente"] = function (block) {
       // Converte porcentagem (0-100) para valor PWM (0-255)
       const pwmConvert = Math.round((block.getFieldValue("VALUE") / 100) * 255);
       return `motor_direito_frente("MOTOR_DIREITO_FRENTE","${pwmConvert}")\n`;
     };
-    Blockly.JavaScript.forBlock["zoy_percent_motor_direito_tras"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_percent_motor_direito_tras"] = function (block) {
       // Converte porcentagem (0-100) para valor PWM (0-255)
       const pwmConvert = Math.round((block.getFieldValue("VALUE") / 100) * 255);
       return `motor_direito_tras("MOTOR_DIREITO_TRAS","${pwmConvert}")\n`;
     };
 
-    Blockly.JavaScript.forBlock["zoy_motores_pinos_digital"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_motores_pinos_digital"] = function (block) {
       const pin = block.getFieldValue("PIN");
       const level = block.getFieldValue("LEVEL");
       return `definir_pino_digital("DIGITAL_WRITE","${pin}, ${level}")\n`;
     };
 
     // Escolha com pinos dos motores
-    Blockly.JavaScript.forBlock["zoy_motores_pinos_pwm"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_motores_pinos_pwm"] = function (block) {
       const pin = block.getFieldValue("PIN");
       const value = block.getFieldValue("VALUE"); // Valor de 0 a 255
       // Assume que você terá uma função `definir_pino_pwm` no app.py
       return `definir_pino_pwm("PWM_WRITE","${pin}, ${value}")\n`;
     };
 
-    Blockly.JavaScript.forBlock["zoy_motores_pinos_porcentagem"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_motores_pinos_porcentagem"] = function (block) {
       const pin = block.getFieldValue("PIN");
       const percentage = block.getFieldValue("VALUE");
       // Converte porcentagem (0-100) para valor PWM (0-255)
@@ -319,25 +319,25 @@
     name: "Motores (Avançados)",
     colour: COR_BLOCOS,
     contents: [
-      { kind: "block", type: "zoy_pwm_motor_esquerdo_frente" },
-      { kind: "block", type: "zoy_pwm_motor_esquerdo_tras" },
-      { kind: "block", type: "zoy_pwm_motor_direito_frente" },
-      { kind: "block", type: "zoy_pwm_motor_direito_tras" },
+      { kind: "block", type: "steam_pwm_motor_esquerdo_frente" },
+      { kind: "block", type: "steam_pwm_motor_esquerdo_tras" },
+      { kind: "block", type: "steam_pwm_motor_direito_frente" },
+      { kind: "block", type: "steam_pwm_motor_direito_tras" },
 
       // Adicionando um separador visual
       { kind: "sep", gap: "50" },
 
-      { kind: "block", type: "zoy_percent_motor_esquerdo_frente" },
-      { kind: "block", type: "zoy_percent_motor_esquerdo_tras" },
-      { kind: "block", type: "zoy_percent_motor_direito_frente" },
-      { kind: "block", type: "zoy_percent_motor_direito_tras" },
+      { kind: "block", type: "steam_percent_motor_esquerdo_frente" },
+      { kind: "block", type: "steam_percent_motor_esquerdo_tras" },
+      { kind: "block", type: "steam_percent_motor_direito_frente" },
+      { kind: "block", type: "steam_percent_motor_direito_tras" },
 
       // Adicionando um separador visual
       { kind: "sep", gap: "50" },
 
-      { kind: "block", type: "zoy_motores_pinos_digital" },
-      { kind: "block", type: "zoy_motores_pinos_pwm" },
-      { kind: "block", type: "zoy_motores_pinos_porcentagem" },
+      { kind: "block", type: "steam_motores_pinos_digital" },
+      { kind: "block", type: "steam_motores_pinos_pwm" },
+      { kind: "block", type: "steam_motores_pinos_porcentagem" },
     ],
   };
 

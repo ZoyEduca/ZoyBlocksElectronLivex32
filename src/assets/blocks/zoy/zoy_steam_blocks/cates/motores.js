@@ -6,7 +6,7 @@
   const motores = () => {
     Blockly.defineBlocksWithJsonArray([
       {
-        type: "zoy_mover_frente",
+        type: "steam_mover_frente",
         message0: "Mover para Frente",
         args0: [],
         previousStatement: null,
@@ -17,7 +17,7 @@
       },
 
       {
-        type: "zoy_mover_tras",
+        type: "steam_mover_tras",
         message0: "Mover para Trás",
         args0: [],
         previousStatement: null,
@@ -28,7 +28,7 @@
       },
 
       {
-        type: "zoy_motor_esquerdo_frente",
+        type: "steam_motor_esquerdo_frente",
         message0: "Motor Esquerdo (Frente)",
         args0: [],
         previousStatement: null,
@@ -39,7 +39,7 @@
       },
 
       {
-        type: "zoy_motor_esquerdo_tras",
+        type: "steam_motor_esquerdo_tras",
         message0: "Motor Esquerdo (Trás)",
         args0: [],
         previousStatement: null,
@@ -50,7 +50,7 @@
       },
 
       {
-        type: "zoy_motor_direito_frente",
+        type: "steam_motor_direito_frente",
         message0: "Motor Direito (Frente)",
         args0: [],
         previousStatement: null,
@@ -61,7 +61,7 @@
       },
 
       {
-        type: "zoy_motor_direito_tras",
+        type: "steam_motor_direito_tras",
         message0: "Motor Direito (Trás)",
         args0: [],
         previousStatement: null,
@@ -72,7 +72,7 @@
       },
 
       {
-        type: "zoy_parar_motor_esquerdo",
+        type: "steam_parar_motor_esquerdo",
         message0: "Parar Motor Esquerdo",
         args0: [],
         previousStatement: null,
@@ -83,7 +83,7 @@
       },
 
       {
-        type: "zoy_parar_motor_direito",
+        type: "steam_parar_motor_direito",
         message0: "Parar Motor Direito",
         args0: [],
         previousStatement: null,
@@ -94,7 +94,7 @@
       },
 
       {
-        type: "zoy_parar_motores",
+        type: "steam_parar_motores",
         message0: "Parar Motores",
         args0: [],
         previousStatement: null,
@@ -106,25 +106,25 @@
     ]);
 
     // Geração de código Python
-    Blockly.JavaScript.forBlock["zoy_mover_frente"] = () =>
+    Blockly.JavaScript.forBlock["steam_mover_frente"] = () =>
       'mover_frente("MOTOR_FRENTE","150,150")\n';
-    Blockly.JavaScript.forBlock["zoy_mover_tras"] = () =>
+    Blockly.JavaScript.forBlock["steam_mover_tras"] = () =>
       'mover_tras("MOTOR_TRAS", "150,150")\n';
 
-    Blockly.JavaScript.forBlock["zoy_motor_esquerdo_frente"] = () =>
+    Blockly.JavaScript.forBlock["steam_motor_esquerdo_frente"] = () =>
       'motor_esquerdo_frente("MOTOR_ESQUERDO_FRENTE", "150")\n';
-    Blockly.JavaScript.forBlock["zoy_motor_esquerdo_tras"] = () =>
+    Blockly.JavaScript.forBlock["steam_motor_esquerdo_tras"] = () =>
       'motor_esquerdo_tras("MOTOR_ESQUERDO_TRAS", "150")\n';
-    Blockly.JavaScript.forBlock["zoy_motor_direito_frente"] = () =>
+    Blockly.JavaScript.forBlock["steam_motor_direito_frente"] = () =>
       'motor_direito_frente("MOTOR_DIREITO_FRENTE", "150")\n';
-    Blockly.JavaScript.forBlock["zoy_motor_direito_tras"] = () =>
+    Blockly.JavaScript.forBlock["steam_motor_direito_tras"] = () =>
       'motor_direito_tras("MOTOR_DIREITO_TRAS", "150")\n';
 
-    Blockly.JavaScript.forBlock["zoy_parar_motor_esquerdo"] = () =>
+    Blockly.JavaScript.forBlock["steam_parar_motor_esquerdo"] = () =>
       'parar_motor_esquerdo("PARAR_ESQUERDO", "")\n';
-    Blockly.JavaScript.forBlock["zoy_parar_motor_direito"] = () =>
+    Blockly.JavaScript.forBlock["steam_parar_motor_direito"] = () =>
       'parar_motor_direito("PARAR_DIREITO", "")\n';
-    Blockly.JavaScript.forBlock["zoy_parar_motores"] = () => 'parar_motor("PARAR", "0,0")\n';
+    Blockly.JavaScript.forBlock["steam_parar_motores"] = () => 'parar_motor("PARAR", "0,0")\n';
   };
 
   const categoriaMotores = {
@@ -132,23 +132,23 @@
     name: "Motores",
     colour: COR_BLOCOS,
     contents: [
-      { kind: "block", type: "zoy_mover_frente" },
-      { kind: "block", type: "zoy_mover_tras" },
+      { kind: "block", type: "steam_mover_frente" },
+      { kind: "block", type: "steam_mover_tras" },
 
       // Adicionando um separador visual
       { kind: "sep", gap: "50" },
 
-      { kind: "block", type: "zoy_motor_esquerdo_frente" },
-      { kind: "block", type: "zoy_motor_esquerdo_tras" },
-      { kind: "block", type: "zoy_motor_direito_frente" },
-      { kind: "block", type: "zoy_motor_direito_tras" },
+      { kind: "block", type: "steam_motor_esquerdo_frente" },
+      { kind: "block", type: "steam_motor_esquerdo_tras" },
+      { kind: "block", type: "steam_motor_direito_frente" },
+      { kind: "block", type: "steam_motor_direito_tras" },
 
       // Adicionando um separador visual
       { kind: "sep", gap: "50" },
 
-      { kind: "block", type: "zoy_parar_motor_esquerdo" },
-      { kind: "block", type: "zoy_parar_motor_direito" },
-      { kind: "block", type: "zoy_parar_motores" },
+      { kind: "block", type: "steam_parar_motor_esquerdo" },
+      { kind: "block", type: "steam_parar_motor_direito" },
+      { kind: "block", type: "steam_parar_motores" },
     ],
   };
 

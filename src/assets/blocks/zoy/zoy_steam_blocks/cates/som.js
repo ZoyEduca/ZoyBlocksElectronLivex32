@@ -5,7 +5,7 @@
   const som = () => {
     Blockly.defineBlocksWithJsonArray([
       {
-        type: "som_nota",
+        type: "steam_som_nota",
         message0: "som da nota %1 duração %2",
         args0: [
           {
@@ -42,7 +42,7 @@
         helpUrl: "",
       },
       {
-        type: "pausa",
+        type: "steam_som_pausa",
         message0: "Pausa com duaração %1",
         args0: [
           {
@@ -66,14 +66,14 @@
     ]);
 
     // Geração de código Python para o bloco
-    Blockly.JavaScript.forBlock["som_nota"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_som_nota"] = function (block) {
       const nota = block.getFieldValue("NOTA");
       const tempo = block.getFieldValue("TEMPO");
 
       return `som_nota("SOM","${nota},${tempo}")\n`;
     };
     // Geração de código Python para o bloco
-    Blockly.JavaScript.forBlock["pausa"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_som_pausa"] = function (block) {
       const tempo = block.getFieldValue("TEMPO");
 
       return `pausa("PAUSA","${tempo}")\n`;
@@ -86,8 +86,8 @@
     name: "Som",
     colour: COR_BLOCOS,
     contents: [
-      { kind: "block", type: "som_nota" },
-      { kind: "block", type: "pausa" },
+      { kind: "block", type: "steam_som_nota" },
+      { kind: "block", type: "steam_som_pausa" },
     ],
   };
 

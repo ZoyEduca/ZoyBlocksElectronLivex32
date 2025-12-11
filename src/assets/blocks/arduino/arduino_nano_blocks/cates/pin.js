@@ -5,7 +5,7 @@
   const pinos = () => {
     Blockly.defineBlocksWithJsonArray([
       {
-        type: "ler_pino_digital",
+        type: "nano_ler_pino_digital",
         message0: "Ler pino digital %1  entrada: %2",
         args0: [
           {
@@ -51,7 +51,7 @@
       },
 
       {
-        type: "definir_pino_digital",
+        type: "nano_definir_pino_digital",
         message0: "Definir pino digital %1 como %2",
         args0: [
           {
@@ -98,7 +98,7 @@
       },
 
       {
-        type: "ler_pino_analogico",
+        type: "nano_ler_pino_analogico",
         message0: "Ler pino analógico %1",
         args0: [
           {
@@ -124,14 +124,14 @@
     ]);
 
     // Geração de código Javascript
-    Blockly.JavaScript.forBlock["ler_pino_digital"] = function (block) {
+    Blockly.JavaScript.forBlock["nano_ler_pino_digital"] = function (block) {
       const pin = block.getFieldValue("PIN");
       const modo = block.getFieldValue("MODO");
       const code = `await digital_read("DIGITAL_READ","${pin},${modo}")`;
       return [code, Blockly.JavaScript.ORDER_AWAIT];
     };
 
-    Blockly.JavaScript.forBlock["definir_pino_digital"] = function (block) {
+    Blockly.JavaScript.forBlock["nano_definir_pino_digital"] = function (block) {
       const pin = block.getFieldValue("PIN");
       const level = block.getFieldValue("LEVEL");
       return `definir_pino_digital("DIGITAL_WRITE","${pin}, ${level}")\n`;
@@ -145,7 +145,7 @@
       return [code, Blockly.JavaScript.ORDER_AWAIT];
     };
 
-    Blockly.JavaScript.forBlock["ler_pino_analogico"] = function (block) {
+    Blockly.JavaScript.forBlock["nano_ler_pino_analogico"] = function (block) {
       const pin = block.getFieldValue("PIN");
       const code = `await analog_read("ANALOG_READ", "${pin}")`;
       return [code, Blockly.JavaScript.ORDER_AWAIT];
@@ -157,9 +157,9 @@
     name: "Pinos Livres",
     colour: COR_BLOCOS,
     contents: [
-      { kind: "block", type: "ler_pino_digital" },
-      { kind: "block", type: "definir_pino_digital" },
-      { kind: "block", type: "ler_pino_analogico" },
+      { kind: "block", type: "nano_ler_pino_digital" },
+      { kind: "block", type: "nano_definir_pino_digital" },
+      { kind: "block", type: "nano_ler_pino_analogico" },
     ],
   };
 

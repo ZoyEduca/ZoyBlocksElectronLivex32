@@ -5,7 +5,7 @@
   const luz = () => {
     Blockly.defineBlocksWithJsonArray([
       {
-        type: "led_pisca_n",
+        type: "steam_led_pisca_n",
         message0: "piscar LED %1 vezes",
         args0: [
           {
@@ -23,7 +23,7 @@
       },
 
       {
-        type: "led_left",
+        type: "steam_led_left",
         message0: "LED (Esquerdo) %1",
         args0: [
           {
@@ -43,7 +43,7 @@
       },
 
       {
-        type: "led_right",
+        type: "steam_led_right",
         message0: "LED (Direito) %1",
         args0: [
           {
@@ -63,7 +63,7 @@
       },
 
       {
-        type: "led_define_pino",
+        type: "steam_led_define_pino",
         message0: "Defina o Pino %1 do LED como %2",
         args0: [
           {
@@ -93,22 +93,22 @@
     ]);
 
     // Geração de código js
-    Blockly.JavaScript.forBlock["led_pisca_n"] = (block) => {
+    Blockly.JavaScript.forBlock["steam_led_pisca_n"] = (block) => {
       const vezes = block.getFieldValue("VEZES");
       return `led_pisca_n("LED_TREZE", "${vezes}")\n`;
     };
 
-    Blockly.JavaScript.forBlock["led_left"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_led_left"] = function (block) {
       const nivel = block.getFieldValue("LEVEL");
       return `led_left("LED_LEFT", "${nivel}")\n`;
     };
 
-    Blockly.JavaScript.forBlock["led_right"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_led_right"] = function (block) {
       const nivel = block.getFieldValue("LEVEL");
       return `led_right("LED_RIGHT","${nivel}")\n`;
     };
 
-    Blockly.JavaScript.forBlock["led_define_pino"] = (block) => {
+    Blockly.JavaScript.forBlock["steam_led_define_pino"] = (block) => {
       const pin = block.getFieldValue("PIN");
       const level = block.getFieldValue("LEVEL");
       return `definir_pino_digital("DIGITAL_WRITE","${pin}, ${level}")\n`;
@@ -120,10 +120,10 @@
     name: "Luz",
     colour: COR_BLOCOS,
     contents: [
-      { kind: "block", type: "led_pisca_n" },
-      { kind: "block", type: "led_left" },
-      { kind: "block", type: "led_right" },
-      { kind: "block", type: "led_define_pino" },
+      { kind: "block", type: "steam_led_pisca_n" },
+      { kind: "block", type: "steam_led_left" },
+      { kind: "block", type: "steam_led_right" },
+      { kind: "block", type: "steam_led_define_pino" },
     ],
   };
 

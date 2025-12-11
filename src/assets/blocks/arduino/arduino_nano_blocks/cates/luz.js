@@ -5,7 +5,7 @@
   const luz = () => {
     Blockly.defineBlocksWithJsonArray([
       {
-        type: "led_pisca_n",
+        type: "nano_led_pisca_n",
         message0: "piscar LED %1 vezes",
         args0: [
           {
@@ -23,7 +23,7 @@
       },
 
       {
-        type: "led_define_pino",
+        type: "nano_led_define_pino",
         message0: "Defina o Pino %1 do LED como %2",
         args0: [
           {
@@ -51,12 +51,12 @@
     ]);
 
     // Geração de código js
-    Blockly.JavaScript.forBlock["led_pisca_n"] = (block) => {
+    Blockly.JavaScript.forBlock["nano_led_pisca_n"] = (block) => {
       const vezes = block.getFieldValue("VEZES");
       return `led_pisca_n("LED_TREZE", "${vezes}")\n`;
     };
 
-    Blockly.JavaScript.forBlock["led_define_pino"] = (block) => {
+    Blockly.JavaScript.forBlock["nano_led_define_pino"] = (block) => {
       const pin = block.getFieldValue("PIN");
       const level = block.getFieldValue("LEVEL");
       return `definir_pino_digital("DIGITAL_WRITE","${pin}, ${level}")\n`;
@@ -68,8 +68,8 @@
     name: "Luz",
     colour: COR_BLOCOS,
     contents: [
-      { kind: "block", type: "led_pisca_n" },
-      { kind: "block", type: "led_define_pino" },
+      { kind: "block", type: "nano_led_pisca_n" },
+      { kind: "block", type: "nano_led_define_pino" },
     ],
   };
 

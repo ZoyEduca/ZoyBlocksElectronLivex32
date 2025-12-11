@@ -5,7 +5,7 @@
   const servo = () => {
     Blockly.defineBlocksWithJsonArray([
       {
-        type: "servo",
+        type: "steam_servo",
         message0: "Ajustar o servo Garra para o comando  %2 no pino %1 ",
         args0: [
           {
@@ -38,7 +38,7 @@
         helpUrl: "",
       },
       {
-        type: "servo360",
+        type: "steam_servo360",
         message0:
           "Ajustar Servo 360 para girar no pino %2 em sentido %1 com velocidade %3%",
         args0: [
@@ -83,14 +83,14 @@
     ]);
 
     // Geração de código Python para o bloco
-    Blockly.JavaScript.forBlock["servo"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_servo"] = function (block) {
       const nota = block.getFieldValue("PINOS");
       const tempo = block.getFieldValue("COMANDOS");
 
       return `servo("${tempo}","${nota}")\n`;
     };
     // Geração de código Python para o bloco
-    Blockly.JavaScript.forBlock["servo360"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_servo360"] = function (block) {
       const sentido = block.getFieldValue("SENTIDO");
       const pino = block.getFieldValue("PINOS");
       if (sentido === "HO") {
@@ -119,8 +119,8 @@
     name: "Servo",
     colour: COR_BLOCOS,
     contents: [
-      { kind: "block", type: "servo" },
-      { kind: "block", type: "servo360" },
+      { kind: "block", type: "steam_servo" },
+      { kind: "block", type: "steam_servo360" },
     ],
   };
 

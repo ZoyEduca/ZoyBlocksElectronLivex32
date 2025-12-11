@@ -5,7 +5,7 @@
   const infravermelho = () => {
     Blockly.defineBlocksWithJsonArray([
       {
-        type: "ir_read",
+        type: "steam_ir_read",
         message0: "Ler sensor IR no pino %1 entrada: %2",
         args0: [
           {
@@ -38,7 +38,7 @@
       },
 
       {
-        type: "ir_value",
+        type: "steam_ir_value",
         message0: "Valor do sensor IR no pino %1",
         args0: [
           {
@@ -58,7 +58,7 @@
       },
 
       {
-        type: "ir_if_detect",
+        type: "steam_ir_if_detect",
         message0: "Se sensor IR no pino %1 como %2 detectar obstáculo",
         args0: [
           {
@@ -99,7 +99,7 @@
       },
 
       {
-        type: "ir_if_not_detect",
+        type: "steam_ir_if_not_detect",
         message0: "Se sensor IR no pino %1 como %2 NÃO detectar obstáculo",
         args0: [
           {
@@ -141,7 +141,7 @@
     ]);
 
     // Geração de código Javascript
-    Blockly.JavaScript.forBlock["ir_read"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_ir_read"] = function (block) {
       const pin = block.getFieldValue("PIN");
       const modo = block.getFieldValue("MODO");
       // Adiciona "await" pois é uma função assíncrona
@@ -149,14 +149,14 @@
       return [code, Blockly.JavaScript.ORDER_AWAIT];
     };
 
-    Blockly.JavaScript.forBlock["ir_value"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_ir_value"] = function (block) {
       const pin = block.getFieldValue("PIN");
       // Adiciona "await" pois é uma função assíncrona
       const code = `await analog_read("ANALOG_READ", "${pin}")`;
       return [code, Blockly.JavaScript.ORDER_AWAIT];
     };
 
-    Blockly.JavaScript.forBlock["ir_if_detect"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_ir_if_detect"] = function (block) {
       const pin = block.getFieldValue("PIN");
       const modo = block.getFieldValue("MODO");
       // Código dos blocos dentro do "faça"
@@ -165,7 +165,7 @@
       return code;
     };
 
-    Blockly.JavaScript.forBlock["ir_if_not_detect"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_ir_if_not_detect"] = function (block) {
       const pin = block.getFieldValue("PIN");
       const modo = block.getFieldValue("MODO");
       const statements = Blockly.JavaScript.statementToCode(block, "DO");
@@ -181,10 +181,10 @@
     name: "Infravermelho",
     colour: COR_BLOCOS,
     contents: [
-      { kind: "block", type: "ir_read" },
-      { kind: "block", type: "ir_value" },
-      { kind: "block", type: "ir_if_detect" },
-      { kind: "block", type: "ir_if_not_detect" },
+      { kind: "block", type: "steam_ir_read" },
+      { kind: "block", type: "steam_ir_value" },
+      { kind: "block", type: "steam_ir_if_detect" },
+      { kind: "block", type: "steam_ir_if_not_detect" },
     ],
   };
 

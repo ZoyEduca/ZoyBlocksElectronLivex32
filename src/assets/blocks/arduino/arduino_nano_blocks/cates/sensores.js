@@ -5,7 +5,7 @@
   const sensores = () => {
     Blockly.defineBlocksWithJsonArray([
       {
-        type: "ultrassom_distancia",
+        type: "nano_ultrassom_distancia",
         message0: "Ler distância do sensor trig %1 echo %2",
         args0: [
           {
@@ -68,7 +68,7 @@
       },
 
       {
-        type: "sensorIR",
+        type: "nano_sensorIR",
         message0: "Leitura sensor infravermelho no pino: %1",
         args0: [
           {
@@ -94,7 +94,7 @@
     ]);
 
     // === Geração de código JavaScript ===
-    Blockly.JavaScript.forBlock["ultrassom_distancia"] = function (block) {
+    Blockly.JavaScript.forBlock["nano_ultrassom_distancia"] = function (block) {
       const trig = block.getFieldValue("TRIG");
       const echo = block.getFieldValue("ECHO");
       // Adiciona "await" pois ler_ultrassom é uma função assíncrona
@@ -102,7 +102,7 @@
       return [code, Blockly.JavaScript.ORDER_AWAIT];
     };
 
-    Blockly.JavaScript.forBlock["sensorIR"] = function (block) {
+    Blockly.JavaScript.forBlock["nano_sensorIR"] = function (block) {
       const pino = block.getFieldValue("PINO");
       // Adiciona "await" pois é uma função assíncrona
       const code = `await analog_read("ANALOG_READ", "${pino}")`;
@@ -115,8 +115,8 @@
     name: "Sensores",
     colour: COR_BLOCOS,
     contents: [
-      { kind: "block", type: "ultrassom_distancia" },
-      { kind: "block", type: "sensorIR" },
+      { kind: "block", type: "nano_ultrassom_distancia" },
+      { kind: "block", type: "nano_sensorIR" },
     ],
   };
 

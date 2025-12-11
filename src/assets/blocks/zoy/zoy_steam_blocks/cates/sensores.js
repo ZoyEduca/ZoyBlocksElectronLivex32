@@ -5,7 +5,7 @@
   const sensores = () => {
     Blockly.defineBlocksWithJsonArray([
       {
-        type: "zoy_ultrassom_distancia",
+        type: "steam_ultrassom_distancia",
         message0: "Ler distância do sensor trig %1 echo %2",
         args0: [
           {
@@ -26,7 +26,7 @@
       },
 
       {
-        type: "sensor_seguidor_linha",
+        type: "steam_sensor_ir",
         message0: "Leitura sensor de linha %1",
         args0: [
           {
@@ -47,7 +47,7 @@
     ]);
 
     // === Geração de código JavaScript ===
-    Blockly.JavaScript.forBlock["zoy_ultrassom_distancia"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_ultrassom_distancia"] = function (block) {
       const trig = block.getFieldValue("TRIG");
       const echo = block.getFieldValue("ECHO");
       // Adiciona "await" pois ler_ultrassom é uma função assíncrona
@@ -55,7 +55,7 @@
       return [code, Blockly.JavaScript.ORDER_AWAIT];
     };
 
-    Blockly.JavaScript.forBlock["sensor_seguidor_linha"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_sensor_ir"] = function (block) {
       const pino = block.getFieldValue("PINO");
       // Adiciona "await" pois é uma função assíncrona
       const code = `await analog_read("ANALOG_READ", "${pino}")`;
@@ -68,8 +68,8 @@
     name: "Sensores",
     colour: COR_BLOCOS,
     contents: [
-      { kind: "block", type: "zoy_ultrassom_distancia" },
-      { kind: "block", type: "sensor_seguidor_linha" },
+      { kind: "block", type: "steam_ultrassom_distancia" },
+      { kind: "block", type: "steam_sensor_ir" },
     ],
   };
 

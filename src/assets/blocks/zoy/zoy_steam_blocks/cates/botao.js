@@ -5,7 +5,7 @@
   const botao = () => {
     Blockly.defineBlocksWithJsonArray([
       {
-        type: "zoy_botao",
+        type: "steam_botao",
         message0: "Ler botão ZOY ",
         args0: [],
         colour: COR_BLOCOS,
@@ -14,7 +14,7 @@
         helpUrl: "",
       },
       // {
-      //   type: "zoy_botao_debounce",
+      //   type: "steam_botao_debounce",
       //   message0: "Ler botão ZOY (debounce) ",
       //   args0: [],
       //   colour: COR_BLOCOS,
@@ -25,13 +25,13 @@
     ]);
 
     // Geração de código Javascript
-    Blockly.JavaScript.forBlock["zoy_botao"] = function (block) {
+    Blockly.JavaScript.forBlock["steam_botao"] = function (block) {
       const code = `await digital_read("DIGITAL_READ", "4,INPUT_PULLUP")`;
       return [code, Blockly.JavaScript.ORDER_AWAIT];
     };
 
 
-    // Blockly.JavaScript.forBlock["zoy_botao_debounce"] = function (block) {
+    // Blockly.JavaScript.forBlock["steam_botao_debounce"] = function (block) {
     //   return [
     //     `ler_botao_debounce("4", "INPUT_PULLUP")`,
     //     Blockly.JavaScript.forBlock.ORDER_FUNCTION_CALL,
@@ -43,9 +43,9 @@
     name: "Botão",
     colour: COR_BLOCOS,
     contents: [
-      { kind: "block", type: "zoy_botao" },
+      { kind: "block", type: "steam_botao" },
       // Removido temporariamente para evitar erro do debounce
-      // { kind: "block", type: "zoy_botao_debounce" },
+      // { kind: "block", type: "steam_botao_debounce" },
     ],
   };
 
