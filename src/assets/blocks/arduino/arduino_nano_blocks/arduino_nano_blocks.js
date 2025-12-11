@@ -1,23 +1,40 @@
-import { eventos, categoriaEventos } from './cates/evento.js';
-import { pinos, categoriaPinos } from './cates/pin.js';
-import { luz, categoriaLuz } from './cates/luz.js';
-import { sensores, categoriaSensores } from './cates/sensores.js';
+window.nanoBlocks = function () {
+  // Apenas inicializar uma única vez
+  if (window.__nanoInitialized) return;
+  window.__nanoInitialized = true;
 
-const arduinoNanoBlocks = () => {
-  eventos(); //inicializa o bloco de eventos
-  pinos(); //inicializa o bloco dos pinos
-  luz();
-  sensores(); //inicializa o bloco dos sensores
- };
+  // Garante arrays
+  window.nanoInitFunctions = window.nanoInitFunctions || [];
+  window.nanoCategories = window.nanoCategories || [];
 
-const toolboxArduinoNano = {
-  kind: "categoryToolbox",
-  contents: [
-    categoriaEventos,
-    categoriaPinos,
-    categoriaLuz,
-    categoriaSensores
-  ]
+  // Se houver uma registry (arquivo de cates empacotados), consome-a agora
+  const registry = window.nanoRegistry || [];
+  registry.forEach((item) => {
+    if (item && typeof item.init === "function") {
+      window.nanoInitFunctions.push(item.init);
+    }
+    if (item && item.category) {
+      window.nanoCategories.push(item.category);
+    }
+  });
+
+  // Executa as funções (define os blocos no Blockly)
+  window.nanoInitFunctions.forEach((fn) => {
+    try {
+      fn();
+    } catch (e) {
+      console.error("Erro init nano fn:", e);
+    }
+  });
+
+  // Monta toolboxNano com as categorias do dispositivo
+  const toolboxContents = [];
+  (window.nanoCategories || []).forEach((categoria) =>
+    toolboxContents.push(categoria)
+  );
+
+  window.toolboxNano = {
+    kind: "categoryToolbox",
+    contents: toolboxContents,
+  };
 };
-
-export { arduinoNanoBlocks, toolboxArduinoNano };

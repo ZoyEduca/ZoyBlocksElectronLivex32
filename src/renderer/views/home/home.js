@@ -43,7 +43,7 @@ const assetsToLoad = {
     { name: "es", type: "js", path: `${window.paths.blockly.msg}es.js` },
     { name: "pt-br", type: "js", path: `${window.paths.blockly.msg}pt-br.js` },
   ],
-  blocksDevice: [
+  blocksDeviceBasic: [
     // Blocos basicos
     {
       name: "basicBlocks",
@@ -85,68 +85,6 @@ const assetsToLoad = {
       name: "funcao_basicBlocks",
       type: "js",
       path: `${window.paths.blocks_device.basic_blocks}cates/funcao.js`,
-    },
-    // blocos do zoySteamBlocks
-    {
-      name: "zoySteamBlocks",
-      type: "js",
-      path: `${window.paths.blocks_device.zoy_steam_blocks}zoy_steam_blocks.js`,
-    },
-    // importar categorias do zoySteamBlocks
-    {
-      name: "evento_zoySteamBlocks",
-      type: "js",
-      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/evento.js`,
-    },
-    {
-      name: "luz_zoySteamBlocks",
-      type: "js",
-      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/luz.js`,
-    },
-    {
-      name: "motores_zoySteamBlocks",
-      type: "js",
-      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/motores.js`,
-    },
-    {
-      name: "motoresAvancados_zoySteamBlocks",
-      type: "js",
-      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/motoresAvancados.js`,
-    },
-    {
-      name: "sensores_zoySteamBlocks",
-      type: "js",
-      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/sensores.js`,
-    },
-    {
-      name: "botao_zoySteamBlocks",
-      type: "js",
-      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/botao.js`,
-    },
-    {
-      name: "pinosLivres_zoySteamBlocks",
-      type: "js",
-      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/pinosLivres.js`,
-    },
-    {
-      name: "som_zoySteamBlocks",
-      type: "js",
-      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/som.js`,
-    },
-    {
-      name: "servo_zoySteamBlocks",
-      type: "js",
-      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/servo.js`,
-    },
-    {
-      name: "infravermelho_zoySteamBlocks",
-      type: "js",
-      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/infravermelho.js`,
-    },
-    {
-      name: "comunicacaoInfra_zoySteamBlocks",
-      type: "js",
-      path: `${window.paths.blocks_device.zoy_steam_blocks}cates/comunicacaoInfra.js`,
     },
   ],
   images: [
@@ -350,14 +288,129 @@ async function conectarWifi() {
 // ----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
-// ----------- Código Original (Preservado e Consolidado) ---------------------
-// ----------------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------------
 // ----------- Importações Iniciais da página ---------------------------------
 // ----------------------------------------------------------------------------
+// Mapeamento de Dispositivos: Define quais arquivos/funções carregar para cada placa.
+const DEVICE_CONFIG = {
+    "zoySTEAM": {
+        assets: [
+            // Todos os assets de blocos específicos da ZoySTEAM
+            {
+              name: "zoySteamBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.zoy_steam_blocks}zoy_steam_blocks.js`,
+            },
+            // importar categorias do zoySteamBlocks
+            {
+              name: "evento_zoySteamBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/evento.js`,
+            },
+            {
+              name: "luz_zoySteamBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/luz.js`,
+            },
+            {
+              name: "motores_zoySteamBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/motores.js`,
+            },
+            {
+              name: "motoresAvancados_zoySteamBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/motoresAvancados.js`,
+            },
+            {
+              name: "sensores_zoySteamBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/sensores.js`,
+            },
+            {
+              name: "botao_zoySteamBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/botao.js`,
+            },
+            {
+              name: "pinosLivres_zoySteamBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/pinosLivres.js`,
+            },
+            {
+              name: "som_zoySteamBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/som.js`,
+            },
+            {
+              name: "servo_zoySteamBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/servo.js`,
+            },
+            {
+              name: "infravermelho_zoySteamBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/infravermelho.js`,
+            },
+            {
+              name: "comunicacaoInfra_zoySteamBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/comunicacaoInfra.js`,
+            },
+        ],
+        defineFunction: 'zoySteamBlocks', // Função global (window.zoySteamBlocks) que registra os blocos
+        toolboxVariable: 'toolboxZoySteam', // Variável global do toolbox (window.toolboxZoySteam)
+    },
+    "arduino_nano": {
+        assets: [
+            // Todos os assets de blocos específicos do Arduino Nano, como na sua nova lista 'nano'
+            {
+              name: "nanoBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.arduino_nano_blocks}arduino_nano_blocks.js`,
+            },
+
+            // importar categorias do nanoBlocks
+            {
+              name: "evento_nanoBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.arduino_nano_blocks}cates/evento.js`,
+            },
+            {
+              name: "pin_nanoBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.arduino_nano_blocks}cates/pin.js`,
+            },
+            {
+              name: "luz_nanoBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.arduino_nano_blocks}cates/luz.js`,
+            },
+            {
+              name: "sensores_nanoBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.arduino_nano_blocks}cates/sensores.js`,
+            },
+            {
+              name: "servo_nanoBlocks",
+              type: "js",
+              path: `${window.paths.blocks_device.arduino_nano_blocks}cates/servo.js`,
+            },
+        ],
+        defineFunction: 'nanoBlocks', 
+        toolboxVariable: 'toolboxNano', 
+    },
+    // "arduino_uno": {
+    //     assets: [
+    //         // Todos os assets de blocos específicos do Arduino Uno
+    //     ],
+    //     defineFunction: 'unoBlocks', 
+    //     toolboxVariable: 'toolboxUno',
+    // },
+              
+};
+
 async function initializeImports() {
   try {
     // Carrega CSS
@@ -372,8 +425,8 @@ async function initializeImports() {
       ...assetsToLoad.blocklyMsg,
     ]);
 
-    // Carrega Blocos de dispositivos
-    await loadAssetsGroup([...assetsToLoad.blocksDevice]);
+    // Carrega SOMENTE os Blocos BÁSICOS Inicialmente.
+    await loadAssetsGroup(assetsToLoad.blocksDeviceBasic);
 
   } catch (error) {
     console.error("❌ Erro ao inicializar Importações:", error);
@@ -422,36 +475,69 @@ async function createWorkspace(toolbox) {
 // ---------------------------------------------------------------------------
 // Atualiza o workspace ao selecionar uma placa
 // ---------------------------------------------------------------------------
+
+// Cache para saber quais blocos de dispositivo já foram carregados
+const loadedDeviceAssets = new Set();
+let currentDeviceToolbox = null; // Armazena o toolbox do dispositivo atualmente carregado
+
 async function atualizarWorkspace(selectPlaca) {
   if (!selectPlaca) return;
 
   selectPlaca.addEventListener("change", async (e) => {
     const placa = e.target.value;
+    const config = DEVICE_CONFIG[placa];
 
-    // Ao selecionar placa: registrar blocos do dispositivo e atualizar toolbox
-    if (placa === "zoySTEAM") {
-      if (window.zoySteamBlocks) window.zoySteamBlocks(); // define blocos do dispositivo
+    if (!config) {
+      console.warn(`Placa desconhecida selecionada: ${placa}`);
+      return;
     }
 
+    exibirLogNoTerminal(`[BLOCOS] Placa selecionada: ${placa}`);
+
+    // Carrega os assets do dispositivo se ainda não foram carregados
+    if (!loadedDeviceAssets.has(placa)) {
+      try {
+        // Carrega todos os JS Blocks/Categories para a placa
+        await loadAssetsGroup(config.assets);
+
+        // Chama a função global de definição dos blocos (ex: window.zoySteamBlocks())
+        if (window[config.defineFunction] && typeof window[config.defineFunction] === 'function') {
+          window[config.defineFunction](); // Define blocos e preenche a variável de toolbox (ex: window.toolboxZoySteam)
+        }
+
+        loadedDeviceAssets.add(placa);
+      } catch (error) {
+        console.error(`❌ Erro ao carregar ou registrar blocos para ${placa}:`, error);
+        return;
+      }
+    }
+
+    // MONTAR O NOVO TOOLBOX
     const contents = [];
+    const deviceToolbox = window[config.toolboxVariable]; // Pega a variável de toolbox específica (ex: window.toolboxZoySteam)
 
-    // Adiciona categorias do dispositivo primeiro (se existirem)
-    if (window.toolboxZoySteam?.contents?.length) {
-      contents.push(...window.toolboxZoySteam.contents);
+    // Adiciona categorias do dispositivo primeiro
+    if (deviceToolbox && deviceToolbox.contents?.length) {
+        contents.push(...deviceToolbox.contents);
     }
 
-    // Depois adiciona categorias básicas
+    // Depois adiciona categorias básicas (que já foram carregadas em initializeImports)
     if (window.toolboxbasicBlocks?.contents?.length) {
-      contents.push(...window.toolboxbasicBlocks.contents);
+        contents.push(...window.toolboxbasicBlocks.contents);
     }
 
     const newToolbox = { kind: "categoryToolbox", contents };
 
-    // Atualiza toolbox do workspace existente
+    // ATUALIZAR WORKSPACE
     if (window.workspace) {
-      window.workspace.updateToolbox(newToolbox);
+        window.workspace.updateToolbox(newToolbox);
+        // Limpa a área de trabalho para evitar blocos incompatíveis da placa anterior
+        window.workspace.clear(); 
+        // Atualiza a área de código após limpar
+        atualizarAreaCodigo(); 
     } else {
-      await createWorkspace(newToolbox);
+        // Se por algum motivo o workspace ainda não existir (embora já seja criado com blocos básicos)
+        await createWorkspace(newToolbox);
     }
   });
 }
