@@ -294,121 +294,154 @@ async function conectarWifi() {
 // ----------------------------------------------------------------------------
 // Mapeamento de Dispositivos: Define quais arquivos/funções carregar para cada placa.
 const DEVICE_CONFIG = {
-    "zoySTEAM": {
-        assets: [
-            // Todos os assets de blocos específicos da ZoySTEAM
-            {
-              name: "zoySteamBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.zoy_steam_blocks}zoy_steam_blocks.js`,
-            },
-            // importar categorias do zoySteamBlocks
-            {
-              name: "evento_zoySteamBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/evento.js`,
-            },
-            {
-              name: "luz_zoySteamBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/luz.js`,
-            },
-            {
-              name: "motores_zoySteamBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/motores.js`,
-            },
-            {
-              name: "motoresAvancados_zoySteamBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/motoresAvancados.js`,
-            },
-            {
-              name: "sensores_zoySteamBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/sensores.js`,
-            },
-            {
-              name: "botao_zoySteamBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/botao.js`,
-            },
-            {
-              name: "pinosLivres_zoySteamBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/pinosLivres.js`,
-            },
-            {
-              name: "som_zoySteamBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/som.js`,
-            },
-            {
-              name: "servo_zoySteamBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/servo.js`,
-            },
-            {
-              name: "infravermelho_zoySteamBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/infravermelho.js`,
-            },
-            {
-              name: "comunicacaoInfra_zoySteamBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.zoy_steam_blocks}cates/comunicacaoInfra.js`,
-            },
-        ],
-        defineFunction: 'zoySteamBlocks', // Função global (window.zoySteamBlocks) que registra os blocos
-        toolboxVariable: 'toolboxZoySteam', // Variável global do toolbox (window.toolboxZoySteam)
-    },
-    "arduino_nano": {
-        assets: [
-            // Todos os assets de blocos específicos do Arduino Nano, como na sua nova lista 'nano'
-            {
-              name: "nanoBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.arduino_nano_blocks}arduino_nano_blocks.js`,
-            },
+  "zoySTEAM": {
+    assets: [
+      // Todos os assets de blocos específicos da ZoySTEAM
+      {
+        name: "zoySteamBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.zoy_steam_blocks}zoy_steam_blocks.js`,
+      },
+      // importar categorias do zoySteamBlocks
+      {
+        name: "evento_zoySteamBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.zoy_steam_blocks}cates/evento.js`,
+      },
+      {
+        name: "luz_zoySteamBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.zoy_steam_blocks}cates/luz.js`,
+      },
+      {
+        name: "motores_zoySteamBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.zoy_steam_blocks}cates/motores.js`,
+      },
+      {
+        name: "motoresAvancados_zoySteamBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.zoy_steam_blocks}cates/motoresAvancados.js`,
+      },
+      {
+        name: "sensores_zoySteamBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.zoy_steam_blocks}cates/sensores.js`,
+      },
+      {
+        name: "botao_zoySteamBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.zoy_steam_blocks}cates/botao.js`,
+      },
+      {
+        name: "pinosLivres_zoySteamBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.zoy_steam_blocks}cates/pinosLivres.js`,
+      },
+      {
+        name: "som_zoySteamBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.zoy_steam_blocks}cates/som.js`,
+      },
+      {
+        name: "servo_zoySteamBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.zoy_steam_blocks}cates/servo.js`,
+      },
+      {
+        name: "infravermelho_zoySteamBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.zoy_steam_blocks}cates/infravermelho.js`,
+      },
+      {
+        name: "comunicacaoInfra_zoySteamBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.zoy_steam_blocks}cates/comunicacaoInfra.js`,
+      },
+    ],
+    defineFunction: 'zoySteamBlocks', // Função global (window.zoySteamBlocks) que registra os blocos
+    toolboxVariable: 'toolboxZoySteam', // Variável global do toolbox (window.toolboxZoySteam)
+  },
 
-            // importar categorias do nanoBlocks
-            {
-              name: "evento_nanoBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.arduino_nano_blocks}cates/evento.js`,
-            },
-            {
-              name: "pin_nanoBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.arduino_nano_blocks}cates/pin.js`,
-            },
-            {
-              name: "luz_nanoBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.arduino_nano_blocks}cates/luz.js`,
-            },
-            {
-              name: "sensores_nanoBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.arduino_nano_blocks}cates/sensores.js`,
-            },
-            {
-              name: "servo_nanoBlocks",
-              type: "js",
-              path: `${window.paths.blocks_device.arduino_nano_blocks}cates/servo.js`,
-            },
-        ],
-        defineFunction: 'nanoBlocks', 
-        toolboxVariable: 'toolboxNano', 
-    },
-    // "arduino_uno": {
-    //     assets: [
-    //         // Todos os assets de blocos específicos do Arduino Uno
-    //     ],
-    //     defineFunction: 'unoBlocks', 
-    //     toolboxVariable: 'toolboxUno',
-    // },
-              
+  "arduino_nano": {
+    assets: [
+      // Todos os assets de blocos específicos do Arduino Nano
+      {
+        name: "nanoBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.arduino_nano_blocks}arduino_nano_blocks.js`,
+      },
+
+      // importar categorias do nanoBlocks
+      {
+        name: "evento_nanoBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.arduino_nano_blocks}cates/evento.js`,
+      },
+      {
+        name: "pin_nanoBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.arduino_nano_blocks}cates/pin.js`,
+      },
+      {
+        name: "luz_nanoBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.arduino_nano_blocks}cates/luz.js`,
+      },
+      {
+        name: "sensores_nanoBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.arduino_nano_blocks}cates/sensores.js`,
+      },
+      {
+        name: "servo_nanoBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.arduino_nano_blocks}cates/servo.js`,
+      },
+    ],
+    defineFunction: 'nanoBlocks', 
+    toolboxVariable: 'toolboxNano', 
+  },
+
+  "arduino_uno": {
+    assets: [
+      // Todos os assets de blocos específicos do Arduino Uno
+      {
+        name: "unoBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.arduino_uno_blocks}arduino_uno_blocks.js`,
+      },
+
+      // importar categorias do unoBlocks
+      {
+        name: "evento_unoBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.arduino_uno_blocks}cates/evento.js`,
+      },
+      {
+        name: "pin_unoBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.arduino_uno_blocks}cates/pin.js`,
+      },
+      {
+        name: "luz_unoBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.arduino_uno_blocks}cates/luz.js`,
+      },
+      {
+        name: "sensores_unoBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.arduino_uno_blocks}cates/sensores.js`,
+      },
+      {
+        name: "servo_unoBlocks",
+        type: "js",
+        path: `${window.paths.blocks_device.arduino_uno_blocks}cates/servo.js`,
+      },
+    ],
+    defineFunction: 'unoBlocks', 
+    toolboxVariable: 'toolboxUno',
+  },        
 };
 
 async function initializeImports() {
