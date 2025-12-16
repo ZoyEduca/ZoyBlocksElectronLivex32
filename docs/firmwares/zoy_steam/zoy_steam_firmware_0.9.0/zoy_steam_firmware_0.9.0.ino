@@ -117,19 +117,20 @@ void setup()
     digitalWrite(LED_13, HIGH);
     digitalWrite(LED_LEFT, HIGH);
     digitalWrite(LED_RIGHT, HIGH);
-    digitalWrite(MOTOR_E1, LOW);
-    analogWrite(MOTOR_E2, 100);
-    analogWrite(MOTOR_D1, 100);
-    digitalWrite(MOTOR_D2, LOW);
+    // Remove dancinha dos motores para Zoy STEAM - Habilitar apenas em enventos especiais
+    // digitalWrite(MOTOR_E1, LOW);
+    // analogWrite(MOTOR_E2, 100);
+    // analogWrite(MOTOR_D1, 100);
+    // digitalWrite(MOTOR_D2, LOW);
     delay(100);
     
     digitalWrite(LED_13, LOW);
     digitalWrite(LED_LEFT, LOW);
     digitalWrite(LED_RIGHT, LOW);
-    analogWrite(MOTOR_E1, 100);
-    digitalWrite(MOTOR_E2, LOW);
-    digitalWrite(MOTOR_D1, LOW);
-    analogWrite(MOTOR_D2, 100);
+    // analogWrite(MOTOR_E1, 100);
+    // digitalWrite(MOTOR_E2, LOW);
+    // digitalWrite(MOTOR_D1, LOW);
+    // analogWrite(MOTOR_D2, 100);
     delay(100);
   }
   // Garante Motores estejam desligados no início
@@ -849,8 +850,8 @@ void processarComando(String cmd)
     
     // Define a animação global
     garraPino = pino;
-    garraAnguloAtual = 175; // Começa fechada
-    garraAnguloAlvo = 0;  // Vai para aberto
+    garraAnguloAtual = 170; // Começa fechada
+    garraAnguloAlvo = 10;  // Vai para aberto
     
     // Seta posição inicial imediata para garantir
     s->objetoServo.write(garraAnguloAtual);
@@ -867,8 +868,8 @@ void processarComando(String cmd)
     if (!s) { Serial.println("ERRO:ZOY_MAX_SERVOS_LIMIT"); return; }
     
     garraPino = pino;
-    garraAnguloAtual = 0;  // Começa aberta
-    garraAnguloAlvo = 175; // Vai para fechado
+    garraAnguloAtual = 10;  // Começa aberta
+    garraAnguloAlvo = 170; // Vai para fechado
     
     s->objetoServo.write(garraAnguloAtual);
     

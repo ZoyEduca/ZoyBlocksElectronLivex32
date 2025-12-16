@@ -4,7 +4,7 @@
 *              : Lourenço, Moises
 *              : Correia, Felipe
 * Updated      : Gemini AI (Refatoração Bibliotecas)
-* Version      : v0.9.2 (Otimização Servo.h e Ultrasonic)
+* Version      : v0.9.0 (Otimização Servo.h e Ultrasonic)
 * Date         : 12/12/2025
 * Description  : Firmware desenvolvido exclusivamente para arduino uno para zoyBlocks
 * License      : Licença Pública Geral Menor GNU(LGPL)
