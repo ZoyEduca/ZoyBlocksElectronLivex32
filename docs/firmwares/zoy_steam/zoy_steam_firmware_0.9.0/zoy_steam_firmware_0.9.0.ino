@@ -770,13 +770,25 @@ void processarComando(String cmd)
   // === AGUARDA:N segundos - AGORA NÃO-BLOQUEANTE ===
   if (comando_temp == "AGUARDA")  {
     argumentos_temp.trim();
-    float segundos = argumentos_temp.toFloat();  // ✅ Lê corretamente 1.5
+    float segundos = argumentos_temp.toFloat();  // Lê corretamente 1.5
     
     pausaAtiva = true;
-    tempoFimPausa = millis() + (unsigned long)(segundos * 1000.0f); // ✅ converte para ms com fração
+    tempoFimPausa = millis() + (unsigned long)(segundos * 1000.0f); // converte para ms com fração
     
     Serial.println("OK_AGUARDA_INICIO");
     return;
+  }
+
+  // === AGUARDA:N MILISEGUNDOS - AGORA NÃO-BLOQUEANTE ===
+  if (comando_temp == "AGUARDA_MS")  {
+      argumentos_temp.trim();
+      unsigned long milissegundos = (unsigned long)argumentos_temp.toInt();  // Lê corretamente o valor em milissegundos
+      
+      pausaAtiva = true;
+      tempoFimPausa = millis() + milissegundos; // usa o valor em milissegundos diretamente
+      
+      Serial.println("OK_AGUARDA_MS_INICIO");
+      return;
   }
 
   // === BEEP:N ms - AGORA NÃO-BLOQUEANTE ===

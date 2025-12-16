@@ -605,6 +605,18 @@ void processarComando(String cmd) {
   return;
  }
 
+  // === AGUARDA:N MILISEGUNDOS - AGORA NÃO-BLOQUEANTE ===
+  if (comando_temp == "AGUARDA_MS")  {
+      argumentos_temp.trim();
+      unsigned long milissegundos = (unsigned long)argumentos_temp.toInt();  // Lê corretamente o valor em milissegundos
+      
+      pausaAtiva = true;
+      tempoFimPausa = millis() + milissegundos; // usa o valor em milissegundos diretamente
+      
+      Serial.println("OK_AGUARDA_MS_INICIO");
+      return;
+  }
+
  if (comando_temp == "ZOY") {
   Serial.println("FIRMWARE:ZOY_UNO:v0.9.0");
   return;

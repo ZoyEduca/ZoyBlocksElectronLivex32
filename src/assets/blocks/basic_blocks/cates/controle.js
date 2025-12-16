@@ -24,14 +24,39 @@
           tooltip: "Pausa a execução por N segundos",
           helpUrl: "",
         },
+        {
+          type: "aguarde_milissegundos",
+          message0: "aguarde %1 milissegundos",
+          args0: [
+            {
+              type: "field_number",
+              name: "TEMPO",
+              value: 1000,
+              min: 0,
+              precision: 0,
+            },
+          ],
+          previousStatement: null,
+          nextStatement: null,
+          colour: COR_BLOCOS,
+          tooltip: "Pausa a execução por N milissegundos",
+          helpUrl: "",
+        },
       ]);
 
-      // ✅ MUDANÇA CRUCIAL AQUI: Gerar o comando 'pausa(AGUARDA, N)'
+      // MUDANÇA CRUCIAL AQUI: Gerar o comando 'pausa(AGUARDA, N)'
       Blockly.JavaScript.forBlock["aguarde_segundos"] = (block) => {
         const tempo = block.getFieldValue("TEMPO");
         // O comando 'pausa' é processado pelo executarCodigo.js
         // e traduzido para o comando serial <AGUARDA:N>
         return `pausa('AGUARDA', ${tempo})\n`;
+      };
+
+      Blockly.JavaScript.forBlock["aguarde_milissegundos"] = (block) => {
+        const tempo = block.getFieldValue("TEMPO");
+        // O comando 'pausa' é processado pelo executarCodigo.js
+        // e traduzido para o comando serial <AGUARDA:N>
+        return `pausa('AGUARDA_MS', ${tempo})\n`;
       };
     }
 
@@ -76,8 +101,9 @@
       { kind: "sep", gap: "50" },
 
       // { kind: "label", text: "Controle de tempo:" },
-      // bloco customizado aguarda segundos
+      // bloco customizado aguarda segundos e milissegundos
       { kind: "block", type: "aguarde_segundos" },
+      { kind: "block", type: "aguarde_milissegundos" },
     ],
   };
 
