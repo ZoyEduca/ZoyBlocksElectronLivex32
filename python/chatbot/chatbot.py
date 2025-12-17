@@ -1,115 +1,61 @@
 import sys
 import os
 import json
-import numpy as np
-# Importações Corretas para modelos de Embedding (Sentence Transformer)
-from sentence_transformers import SentenceTransformer
+import difflib
 
-# 1. Defina o nome da pasta do modelo
-LOCAL_MODEL_NAME = "all-MiniLM-L6-v2"
+# --- FORÇA O PYTHON A USAR UTF-8 PARA SAÍDA DE TEXTO ---
+if sys.stdout.encoding != 'utf-8':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
-# 2. CALCULA O CAMINHO BASE (A RAIZ DO PROJETO)
-# current_dir é [RAIZ]/python/chatbot. Subir um '..' chega à [RAIZ]/python
+# 1. Localiza o arquivo JSON
 current_dir = os.path.dirname(os.path.abspath(__file__))
-BASE_PATHON = os.path.abspath(os.path.join(current_dir, "..")) 
+json_path = os.path.join(current_dir, "faq_data.json")
 
-# 3. CONSTRÓI OS CAMINHOS ABSOLUTOS FINAIS
-# O modelo está em [RAIZ]/models/all-MiniLM-L6-v2
-MODEL_PATH = os.path.join(BASE_PATHON, "models", LOCAL_MODEL_NAME)
-# O NPZ está na raiz do projeto: [RAIZ]/faq_embeddings.npz
-NPZ_PATH = os.path.join(current_dir, 'faq_embeddings.npz')
+def carregar_dados():
+    """Carrega o arquivo JSON garantindo UTF-8."""
+    try:
+        # Importante: encoding='utf-8' aqui é essencial
+        with open(json_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        return {"ajuda": f"Erro ao carregar base: {str(e)}"}
 
-
-def normalize(text):
-    """Função de normalização de texto."""
-    return text.lower().strip()
+def buscar_resposta(pergunta_usuario, faq_data):
+    pergunta_usuario = pergunta_usuario.lower().strip()
+    perguntas_conhecidas = list(faq_data.keys())
+    
+    matches = difflib.get_close_matches(pergunta_usuario, perguntas_conhecidas, n=1, cutoff=0.4)
+    
+    if matches:
+        return faq_data[matches[0]]
+    
+    return "Ainda não tenho uma resposta exata. Tente palavras-chave como 'ligar' ou 'bluetooth'."
 
 def main():
-    """
-    Função principal que carrega os modelos e entra em um loop para processar perguntas.
-    """
+    base_conhecimento = carregar_dados()
     
-    # ----------------------------------------------------
-    # 1. Carrega os Embeddings FAQ e Respostas
-    # ----------------------------------------------------
-    try:
-        # Usa o caminho absoluto garantido
-        data = np.load(NPZ_PATH, allow_pickle=True)
-        faq_embeddings = np.array(data['embeddings'])
-        faq_respostas = data['respostas']
-        # ✔ log normal → stdout
-        print(f"Embeddings FAQ carregados com sucesso de: {NPZ_PATH}")
-    except FileNotFoundError:
-        # erro mesmo → stderr
-        print(f"ERRO CRÍTICO: Arquivo faq_embeddings.npz não encontrado em: {NPZ_PATH}", file=sys.stderr)
-        print("Você precisa executar um script para gerar os embeddings FAQ antes de usar o chatbot.", file=sys.stderr)
-        sys.exit(1) # Sai com erro
-    except Exception as e:
-        print(f"ERRO CRÍTICO: Erro ao carregar faq_embeddings.npz: {e}", file=sys.stderr)
-        sys.exit(1)
-
-
-    # ----------------------------------------------------
-    # 2. Carrega o Modelo SentenceTransformer
-    # ----------------------------------------------------
-    try:
-        if not os.path.exists(MODEL_PATH) or not os.listdir(MODEL_PATH):
-            print(f"ERRO CRÍTICO: Pasta do modelo LLM vazia ou não encontrada em: {MODEL_PATH}", file=sys.stderr)
-            print("Execute 'python download_model.py' ou verifique o caminho e conteúdo da pasta 'models'.", file=sys.stderr)
-            sys.exit(1)
-
-        # Carrega o modelo SentenceTransformer da pasta local
-        model = SentenceTransformer(MODEL_PATH) 
-        # ✔ log normal → stdout
-        print(f"Modelo SentenceTransformer carregado com sucesso de: {MODEL_PATH}")
-    except Exception as e:
-        print(f"ERRO CRÍTICO: Erro ao carregar o modelo de: {MODEL_PATH} -> {e}", file=sys.stderr)
-        print(f"Verifique se a pasta '{LOCAL_MODEL_NAME}' está completa e se as bibliotecas (torch, transformers, etc.) estão instaladas.", file=sys.stderr)
-        sys.exit(1) # Sai com erro
-
-    
-    # ----------------------------------------------------
-    # 3. Função de Busca por Similaridade
-    # ----------------------------------------------------
-    def buscar_resposta(pergunta):
-        """Busca a resposta mais similar nos embeddings pré-calculados."""
-        pergunta_emb = model.encode(normalize(pergunta))
-        
-        # O dot product de vetores normalizados é a similaridade de cosseno.
-        scores = np.dot(faq_embeddings, pergunta_emb) 
-        idx = np.argmax(scores)
-        
-        # Limite de similaridade (0.5 é um bom ponto de partida)
-        SIMILARITY_THRESHOLD = 0.5 
-        
-        if scores[idx] > SIMILARITY_THRESHOLD: 
-            return faq_respostas[idx]
-            
-        return "Ainda não sei responder a essa pergunta específica sobre o ZoyBlocks. Tente reformular."
-
-
-    # ----------------------------------------------------
-    # 4. Loop Principal de Comunicação
-    # ----------------------------------------------------
-    # ✔ log normal → stdout
-    print("Pronto para receber perguntas do Node/Electron...")
+    # Notifica o Electron (usando ensure_ascii=False para não escapar acentos)
+    print(json.dumps({"status": "ready", "count": len(base_conhecimento)}, ensure_ascii=False))
+    sys.stdout.flush()
 
     for line in sys.stdin:
         try:
-            input_data = json.loads(line)
-            pergunta = input_data.get("pergunta", "")
+            data = json.loads(line)
+            pergunta = data.get("pergunta", "")
             
             if pergunta:
-                resposta = buscar_resposta(pergunta)
+                resposta = buscar_resposta(pergunta, base_conhecimento)
                 
-                # Envia a resposta como um JSON para o stdout
-                sys.stdout.write(json.dumps({"resposta": resposta}) + '\n')
-                sys.stdout.flush() 
-        except json.JSONDecodeError:
-            print("Erro ao decodificar JSON. Ignorando linha.", file=sys.stderr)
-            sys.stderr.flush()
+                # O segredo: ensure_ascii=False mantém os caracteres originais
+                resultado_json = json.dumps({"resposta": resposta}, ensure_ascii=False)
+                
+                sys.stdout.write(resultado_json + '\n')
+                sys.stdout.flush()
         except Exception as e:
-            print(f"Erro ao processar a pergunta: {e}", file=sys.stderr)
+            err_msg = json.dumps({"erro": str(e)}, ensure_ascii=False)
+            print(err_msg, file=sys.stderr)
             sys.stderr.flush()
 
 if __name__ == "__main__":
