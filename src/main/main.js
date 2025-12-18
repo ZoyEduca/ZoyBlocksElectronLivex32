@@ -311,9 +311,9 @@ function getVisionPaths() {
     const distPath = path.join(basePath, "python", "zoy_vision");
     
     if (process.platform === "win32") {
-      execPath = path.join(distPath, "vision.exe");
+      execPath = path.join(distPath, "zoy_vision.exe");
     } else {
-      execPath = path.join(distPath, "vision");
+      execPath = path.join(distPath, "zoy_vision");
     }
     cwd = distPath;
     
