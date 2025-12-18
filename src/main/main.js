@@ -57,7 +57,7 @@ const createWindow = () => {
   */
   //  Atualmente 22.09.2025 com erro em autofill - esperando correção futura do electron
   if (process.env.NODE_ENV === "development") {
-    mainWindow.webContents.openDevTools();
+    mainWindow.webContents.closeDevTools();
   } else {
     mainWindow.webContents.closeDevTools();
   }
@@ -126,7 +126,7 @@ ipcMain.handle("abrir-zoygpt", () => {
 
   // Habilita DevTools | Desative o DevTools em produção
   if (process.env.NODE_ENV === "development") {
-    gptWindow.webContents.openDevTools();
+    gptWindow.webContents.closeDevTools();
   } else {
     gptWindow.webContents.closeDevTools();
   }
@@ -488,7 +488,7 @@ ipcMain.handle("abrir-terminal-completo", () => {
 
   // habilita DevTools | Desative o DevTools em produção
   if (process.env.NODE_ENV === "development") {
-    terminalWindow.webContents.openDevTools();
+    terminalWindow.webContents.closeDevTools();
   } else {
     terminalWindow.webContents.closeDevTools();
   }
@@ -518,7 +518,7 @@ ipcMain.handle("abrir-zoygames", () => {
 
   // Habilita DevTools | Desative o DevTools em produção
   if (process.env.NODE_ENV === "development") {
-    gptWindow.webContents.openDevTools();
+    gptWindow.webContents.closeDevTools();
   } else {
     gptWindow.webContents.closeDevTools();
   }
@@ -544,7 +544,7 @@ ipcMain.handle("abrir-blocklygames", () => {
 
   // Habilita DevTools | Desative o DevTools em produção
   if (process.env.NODE_ENV === "development") {
-    gptWindow.webContents.openDevTools();
+    gptWindow.webContents.closeDevTools();
   } else {
     gptWindow.webContents.closeDevTools();
   }
@@ -603,7 +603,7 @@ app.whenReady().then(() => {
       createWindow();
     }
   });
-
+  disableDevToolsShortcuts();
   // Desabilita os atalhos logo após a inicialização em modo produção
   if (process.env.NODE_ENV === "production") {
     disableDevToolsShortcuts();

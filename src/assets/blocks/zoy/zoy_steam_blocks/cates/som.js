@@ -6,7 +6,7 @@
     Blockly.defineBlocksWithJsonArray([
       {
         type: "steam_som_nota",
-        message0: "som da nota %1 duração %2",
+        message0: "som da nota %1 duração %2 no pino %3" ,
         args0: [
           {
             type: "field_dropdown",
@@ -33,6 +33,20 @@
               ["Semicolcheia (125ms)", "125"],
             ],
           },
+           {
+            type: "field_dropdown",
+            name: "PINO",
+            options: [
+              ["A0/D14", "14"],
+              ["A4/D18", "18"],
+              ["A5/D19", "19"],
+              ["D2", "2"],
+              ["D9", "9"],
+              ["D10", "10"],
+              ["D12", "12"],
+              ["D13", "13"],
+            ],
+          },
         ],
         previousStatement: null,
         nextStatement: null,
@@ -43,7 +57,7 @@
       },
       {
         type: "steam_som_pausa",
-        message0: "Pausa com duaração %1",
+        message0: "Pausa com duaração %1 no pino %2",
         args0: [
           {
             type: "field_dropdown",
@@ -54,6 +68,20 @@
               ["Semínima (500ms)", "500"],
               ["Colcheia (250ms)", "250"],
               ["Semicolcheia (125ms)", "125"],
+            ],
+          },
+           {
+            type: "field_dropdown",
+            name: "PINO",
+            options: [
+              ["A0/D14", "14"],
+              ["A4/D18", "18"],
+              ["A5/D19", "19"],
+              ["D2", "2"],
+              ["D9", "9"],
+              ["D10", "10"],
+              ["D12", "12"],
+              ["D13", "13"],
             ],
           },
         ],
@@ -67,16 +95,18 @@
 
     // Geração de código Python para o bloco
     Blockly.JavaScript.forBlock["steam_som_nota"] = function (block) {
+      const pino = block.getFieldValue("PINO");
       const nota = block.getFieldValue("NOTA");
       const tempo = block.getFieldValue("TEMPO");
 
-      return `som_nota("SOM","${nota},${tempo}")\n`;
+      return `som_nota("SOM","${pino},${nota},${tempo}")\n`;
     };
     // Geração de código Python para o bloco
     Blockly.JavaScript.forBlock["steam_som_pausa"] = function (block) {
+      const pino = block.getFieldValue("PINO");
       const tempo = block.getFieldValue("TEMPO");
 
-      return `pausa("PAUSA","${tempo}")\n`;
+      return `pausa("PAUSA","${pino},${tempo}")\n`;
     };
   };
 

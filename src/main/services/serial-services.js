@@ -65,7 +65,7 @@ function enviarDadosSerial(dados) {
 
     // --- TRATAMENTO DE ACK (FIM DE AÇÃO) ---
     // (Apenas se não for uma resposta de sensor já tratada)
-    if (dados === 'PAUSA_FIM' || dados === 'SERVO_FIM' || dados === 'ACK') {
+    if (dados === 'PAUSA_FIM' || dados === 'SOM_FIM' || dados === 'SERVO_FIM' || dados === 'ACK') {
         if (waitingItem.isWaitingForAck) {
             waitingItem.resolve(); // Resolve a promessa (sem valor)
             commandQueue.shift(); // Remove o item da fila
@@ -215,6 +215,7 @@ function sendNextCommandFromQueue() {
     //    (led_pisca_n presumivelmente exige, led_left/right não)
     const requiresAck = comando.startsWith('<AGUARDA') || 
                           comando.startsWith('<PAUSA') || 
+                          comando.startsWith('<SOM') ||
                           comando.startsWith('<A:') || // Servo
                           comando.startsWith('<C:') || // Servo
                           comando.startsWith('<LED_TREZE'); // Comando 'led_pisca_n'

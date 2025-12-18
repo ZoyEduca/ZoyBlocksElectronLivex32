@@ -86,6 +86,11 @@ const assetsToLoad = {
       type: "js",
       path: `${window.paths.blocks_device.basic_blocks}cates/funcao.js`,
     },
+    {
+      name: "extra_basicBlocks",
+      type: "js",
+      path: `${window.paths.blocks_device.basic_blocks}cates/extra.js`,
+    },
   ],
   images: [
     {

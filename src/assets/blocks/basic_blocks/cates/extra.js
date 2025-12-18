@@ -2,11 +2,11 @@
   // Cor padrão para blocos IR
   const COR_BLOCOS = "#8E44AD";
 
-  const infravermelho = () => {
+  const extra = () => {
     Blockly.defineBlocksWithJsonArray([
       {
-        type: "steam_ir_read",
-        message0: "Ler sensor IR no pino %1 entrada: %2",
+        type: "extra_ir_read",
+        message0: "Ler sensor IR TRCT5000 no pino %1 entrada: %2",
         args0: [
           {
             type: "field_dropdown",
@@ -38,8 +38,8 @@
       },
 
       {
-        type: "steam_ir_value",
-        message0: "Valor do sensor IR no pino %1",
+        type: "extra_ir_value",
+        message0: "Valor do sensor IR TRCT5000 no pino %1",
         args0: [
           {
             type: "field_dropdown",
@@ -58,8 +58,8 @@
       },
 
       {
-        type: "steam_ir_if_detect",
-        message0: "Se sensor IR no pino %1 como %2 detectar obstáculo",
+        type: "extra_ir_if_detect",
+        message0: "Se sensor IR TRCT5000 no pino %1 como %2 detectar obstáculo",
         args0: [
           {
             type: "field_dropdown",
@@ -99,8 +99,8 @@
       },
 
       {
-        type: "steam_ir_if_not_detect",
-        message0: "Se sensor IR no pino %1 como %2 NÃO detectar obstáculo",
+        type: "extra_ir_if_not_detect",
+        message0: "Se sensor IR TRCT5000 no pino %1 como %2 NÃO detectar obstáculo",
         args0: [
           {
             type: "field_dropdown",
@@ -141,7 +141,7 @@
     ]);
 
     // Geração de código Javascript
-    Blockly.JavaScript.forBlock["steam_ir_read"] = function (block) {
+    Blockly.JavaScript.forBlock["extra_ir_read"] = function (block) {
       const pin = block.getFieldValue("PIN");
       const modo = block.getFieldValue("MODO");
       // Adiciona "await" pois é uma função assíncrona
@@ -149,46 +149,51 @@
       return [code, Blockly.JavaScript.ORDER_AWAIT];
     };
 
-    Blockly.JavaScript.forBlock["steam_ir_value"] = function (block) {
+    Blockly.JavaScript.forBlock["extra_ir_value"] = function (block) {
       const pin = block.getFieldValue("PIN");
       // Adiciona "await" pois é uma função assíncrona
       const code = `await analog_read("ANALOG_READ", "${pin}")`;
       return [code, Blockly.JavaScript.ORDER_AWAIT];
     };
 
-    Blockly.JavaScript.forBlock["steam_ir_if_detect"] = function (block) {
+    Blockly.JavaScript.forBlock["extra_ir_if_detect"] = function (block) {
       const pin = block.getFieldValue("PIN");
       const modo = block.getFieldValue("MODO");
       // Código dos blocos dentro do "faça"
       const statements = Blockly.JavaScript.statementToCode(block, "DO");
-      const code = `if (await digital_read("DIGITAL_READ","${pin}, ${modo}")) {${statements}}`;
+      const code = `if (! (await digital_read("DIGITAL_READ","${pin}, ${modo}"))) {${statements}}`;
       return code;
     };
 
-    Blockly.JavaScript.forBlock["steam_ir_if_not_detect"] = function (block) {
+    Blockly.JavaScript.forBlock["extra_ir_if_not_detect"] = function (block) {
       const pin = block.getFieldValue("PIN");
       const modo = block.getFieldValue("MODO");
       const statements = Blockly.JavaScript.statementToCode(block, "DO");
-      const code = `if (!(await digital_read("DIGITAL_READ","${pin}, ${modo}"))) {${statements}}`;
+      const code = `if (await digital_read("DIGITAL_READ","${pin}, ${modo}")) {${statements}}`;
       return code;
     };
 
   };
 
   // Categoria para toolbox
-  const categoriaInfravermelho = {
+  const categoriaExtra = {
     kind: "category",
-    name: "Infravermelho",
+    name: "Extra",
     colour: COR_BLOCOS,
     contents: [
-      { kind: "block", type: "steam_ir_read" },
-      { kind: "block", type: "steam_ir_value" },
-      { kind: "block", type: "steam_ir_if_detect" },
-      { kind: "block", type: "steam_ir_if_not_detect" },
+      { kind: "block", type: "extra_ir_read" },
+      { kind: "block", type: "extra_ir_value" },
+      { kind: "block", type: "extra_ir_if_detect" },
+      { kind: "block", type: "extra_ir_if_not_detect" },
     ],
   };
 
-  // Registra blocos
-  window.zoySteamRegistry = window.zoySteamRegistry || [];
-  window.zoySteamRegistry.push({ init: infravermelho, category: categoriaInfravermelho });
+  
+   // Registra globalmente
+  window.basicCategories = window.basicCategories || [];
+  window.basicCategories.push(categoriaExtra);
+
+  window.basicInitFunctions = window.basicInitFunctions || [];
+  window.basicInitFunctions.push(extra);
+
 })();
